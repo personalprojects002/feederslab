@@ -1,3 +1,72 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --text: #0b0b0c;
+  --muted: #4b5563;
+  --line: #e5e7eb;
+  --brand: #2563eb;
+  --brand-hover: #1d4ed8;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+body {
+  font-feature-settings:
+    "ss01" on,
+    "cv01" on,
+    "cv02" on;
+}
+
+.shell {
+  @apply mx-auto w-full max-w-6xl px-6 md:px-10;
+}
+
+.section {
+  @apply py-20 md:py-24;
+}
+
+.surface {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  @apply rounded-2xl;
+}
+
+.muted-text {
+  color: var(--muted);
+}
+
+.eyebrow {
+  @apply inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium tracking-wide;
+  border-color: var(--line);
+  color: #374151;
+  background: #fff;
+}
+
+.btn-primary-premium {
+  @apply inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold transition-colors;
+  background: var(--text);
+  color: #fff;
+}
+
+.btn-primary-premium:hover {
+  background: #1f2937;
+}
+
+.btn-secondary-premium {
+  @apply inline-flex items-center justify-center rounded-xl border px-5 py-3 text-sm font-semibold transition-colors;
+  border-color: var(--line);
+  background: #fff;
+  color: var(--text);
+}
+
+.btn-secondary-premium:hover {
+  background: #f9fafb;
+}

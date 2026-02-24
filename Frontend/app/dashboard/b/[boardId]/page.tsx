@@ -85,32 +85,12 @@ export default function FeedbackBoard({ params }: Props) {
   // Loading state
   if (loading) {
     return (
-      <div className="bg-base-200 min-h-screen">
-        <div className="bg-base-200 shadow-sm">
-          <div className="max-w-5xl mx-auto px-4 py-4 flex justify-end">
-            <Link href="/dashboard" className="btn btn-neutral">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-4 h-4"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
-                />
-              </svg>
-              Back
-            </Link>
-          </div>
-        </div>
-
-        <div className="max-w-5xl mx-auto px-4 py-8">
-          <div className="flex justify-center py-12">
-            <span className="loading loading-spinner loading-lg"></span>
+      <div className="min-h-screen bg-[#F5F5F7]">
+        <div className="mx-auto w-full max-w-5xl px-6 py-8 md:px-10">
+          <div className="rounded-2xl border border-[#E5E7EB] bg-white p-10">
+            <div className="flex justify-center py-12">
+              <span className="loading loading-spinner loading-lg"></span>
+            </div>
           </div>
         </div>
       </div>
@@ -120,17 +100,20 @@ export default function FeedbackBoard({ params }: Props) {
   // Error state
   if (error) {
     return (
-      <div className="bg-base-200 min-h-screen">
-        <div className="bg-base-200 shadow-sm">
-          <div className="max-w-5xl mx-auto px-4 py-4 flex justify-end">
-            <Link href="/dashboard" className="btn btn-neutral">
+      <div className="min-h-screen bg-[#F5F5F7]">
+        <div className="mx-auto w-full max-w-5xl px-6 py-8 md:px-10">
+          <div className="mb-5">
+            <Link
+              href="/dashboard"
+              className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm font-medium text-[#0B0B0C] hover:bg-[#F9FAFB]"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}
                 stroke="currentColor"
-                className="w-4 h-4"
+                className="h-4 w-4"
               >
                 <path
                   strokeLinecap="round"
@@ -138,13 +121,11 @@ export default function FeedbackBoard({ params }: Props) {
                   d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
                 />
               </svg>
-              Back
+              Back to dashboard
             </Link>
           </div>
-        </div>
 
-        <div className="max-w-5xl mx-auto px-4 py-8">
-          <div className="alert alert-error">
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">
             <span>{error}</span>
           </div>
         </div>
@@ -154,17 +135,20 @@ export default function FeedbackBoard({ params }: Props) {
 
   // Board content
   return (
-    <div className="bg-base-200 min-h-screen">
-      <div className="bg-base-200 shadow-sm">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex justify-end">
-          <Link href="/dashboard" className="btn btn-neutral">
+    <div className="min-h-screen bg-[#F5F5F7]">
+      <div className="mx-auto w-full max-w-5xl px-6 py-8 md:px-10">
+        <div className="mb-5">
+          <Link
+            href="/dashboard"
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm font-medium text-[#0B0B0C] hover:bg-[#F9FAFB]"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="w-4 h-4"
+              className="h-4 w-4"
             >
               <path
                 strokeLinecap="round"
@@ -172,22 +156,23 @@ export default function FeedbackBoard({ params }: Props) {
                 d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
               />
             </svg>
-            Back
+            Back to dashboard
           </Link>
         </div>
-      </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-4">{board?.board_name}</h1>
-        <div className="text-sm text-base-content/60 mb-8">
-          Created on {new Date(board?.created_at || "").toLocaleDateString()}
-        </div>
-
-        {/* Board content area - placeholder for future features */}
-        <div className="bg-base-100 rounded-3xl p-8 text-center">
-          <p className="text-base-content/60">
-            Board content will be displayed here
+        <div className="rounded-2xl border border-[#E5E7EB] bg-white p-7 md:p-8">
+          <h1 className="text-2xl font-semibold tracking-tight text-[#0B0B0C] md:text-3xl">
+            {board?.board_name}
+          </h1>
+          <p className="mt-2 text-sm text-gray-500">
+            Created on {new Date(board?.created_at || "").toLocaleDateString()}
           </p>
+
+          <div className="mt-6 rounded-xl border border-dashed border-[#D1D5DB] bg-white p-8 text-center">
+            <p className="text-sm text-gray-600">
+              Board content will appear here.
+            </p>
+          </div>
         </div>
       </div>
     </div>

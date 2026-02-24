@@ -36,7 +36,10 @@ export default function ButtonPortal() {
   }
 
   return (
-    <button className="btn btn-primary py-5" onClick={portalHandler}>
+    <button
+      className="inline-flex h-11 items-center justify-center rounded-xl border border-[#E5E7EB] bg-white px-5 text-sm font-semibold text-[#0B0B0C] transition-colors hover:bg-[#F9FAFB]"
+      onClick={portalHandler}
+    >
       {isloading ? (
         <span className="flex items-center gap-2">
           <span className="loading loading-spinner loading-xs"></span>

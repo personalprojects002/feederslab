@@ -39,7 +39,10 @@ export default function ButtonCheckout() {
   }
 
   return (
-    <button className="btn btn-primary py-5" onClick={checkOutHandler}>
+    <button
+      className="inline-flex h-11 items-center justify-center rounded-xl bg-[#0B0B0C] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#1F2937]"
+      onClick={checkOutHandler}
+    >
       {isloading ? (
         <span className="flex items-center gap-2">
           <span className="loading loading-spinner loading-xs"></span>

@@ -1,42 +1,64 @@
-# Full Project README (Converter)
+# FeedersLab
 
-This is a full-stack project.
+FeedersLab is a full-stack SaaS product for collecting customer feature feedback, organizing it into boards, and managing subscription access.
 
-Full-stack means there are 2 parts:
+It includes:
 
-- Frontend: what user sees in browser
-- Backend: server that handles data, auth, and Stripe billing
+- A premium landing page and authentication flow
+- A user dashboard to create and open feedback boards
+- Stripe checkout + billing portal + webhook handling
 
-You now have one clean README per major part:
+## Who this product is for
 
-- `Frontend/README.md`
-- `Backend/README.md`
+- Product teams
+- Founders shipping fast
+- SaaS teams that need a clear system for feature requests
 
----
+## Project structure
 
-## 1) Project structure
+- `Frontend/` - Next.js app (UI, auth pages, dashboard)
+- `Backend/` - FastAPI app (boards API, billing API, webhook)
+- `scripts/` - one-click local start/stop scripts (Windows)
 
-- `Frontend/` → Next.js app
-- `Backend/` → FastAPI app
-- `scripts/` → one-click start and stop scripts for Windows
+## Technology stack
 
----
+### Frontend
 
-## 2) Before you start (software)
+- Next.js 16 (App Router)
+- React 19 + TypeScript
+- Tailwind CSS + DaisyUI
+- Axios for backend API calls
+- Better Auth (email magic link + Google social login)
+- React Hot Toast for notifications
+- Stripe SDK (frontend flow integration)
 
-Install these tools:
+### Backend
 
-- Node.js 18+ (includes npm)
+- FastAPI
+- SQLModel + SQLAlchemy
+- PostgreSQL (via `psycopg2-binary`)
+- JWT (`pyjwt[crypto]`)
+- Stripe Python SDK
+- Uvicorn ASGI server
+- Python Dotenv for environment management
+
+### External services
+
+- Stripe (subscriptions, checkout, billing portal, webhooks)
+- Resend (magic-link email delivery)
+- Google OAuth (social login)
+
+## Prerequisites
+
+- Node.js 18+
+- npm
 - Python 3.12+
-- Stripe CLI (only needed for webhook testing)
+- PostgreSQL database
+- Stripe CLI (for local webhook testing)
 
----
+## Environment setup
 
-## 3) Environment files you must create
-
-### A) Backend env file
-
-Create: `Backend/.env`
+Create `Backend/.env`:
 
 ```env
 DATABASE_URL=postgresql://username:password@host:5432/db_name
@@ -49,9 +71,7 @@ SB_PRODUCT_PRICE_ID=price_your_product_price_id
 STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
 ```
 
-### B) Frontend env file
-
-Create: `Frontend/.env.local`
+Create `Frontend/.env.local`:
 
 ```env
 NEXT_PUBLIC_BACKEND_API_URL=http://localhost:8000
@@ -66,13 +86,26 @@ RESEND_KEY=re_your_resend_api_key
 RESEND_FROM=noreply@yourdomain.com
 ```
 
----
+## Install dependencies
 
-## 4) One-command run (recommended)
+Frontend:
 
-Use this for daily local work on Windows.
+```powershell
+cd Frontend
+npm install
+```
 
-From project root:
+Backend (from project root):
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python -m pip install --upgrade pip
+.\.venv\Scripts\python -m pip install -e .\Backend
+```
+
+## Run locally (recommended)
+
+From project root (Windows):
 
 ```powershell
 .\scripts\start-all.bat
@@ -84,75 +117,55 @@ This starts:
 - Backend on `http://localhost:8000`
 - Frontend on `http://localhost:3000`
 
-To stop everything:
+Stop services:
 
 ```powershell
 .\scripts\stop-all.bat
 ```
 
----
+## Run manually (optional)
 
-## 5) Manual run (if needed)
-
-### Start backend manually
+Backend:
 
 ```powershell
 cd Backend
 ..\.venv\Scripts\python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Start frontend manually
+Frontend:
 
 ```powershell
 cd Frontend
-npm install
 npm run dev
 ```
 
-### Start webhook manually
+Stripe webhook listener:
 
 ```powershell
 stripe listen --forward-to http://localhost:8000/webhook/stripe
 ```
 
----
-
-## 6) URLs you will use
+## URLs
 
 - Frontend: `http://localhost:3000`
 - Backend API: `http://localhost:8000`
-- Backend API docs: `http://localhost:8000/docs`
+- API docs (Swagger): `http://localhost:8000/docs`
 
----
+## Product flow
 
-## 7) Step-by-step first run checklist
+1. User signs in (Google or magic link)
+2. User enters dashboard and creates a board
+3. User manages product feedback using boards
+4. Billing access is checked via backend
+5. User can subscribe (checkout) or manage billing (portal)
+6. Stripe webhook updates billing state server-side
 
-1. Create both env files exactly as shown above.
-2. Install Node.js and Python.
-3. Run `npm install` inside `Frontend` once.
-4. Make sure Python environment exists in `.venv`.
-5. Run `.\scripts\start-all.bat`.
-6. Open `http://localhost:3000`.
-7. Keep all service windows open while testing.
+## Key scripts
 
----
+- `scripts/start-all.bat` - start Stripe + backend + frontend
+- `scripts/stop-all.bat` - stop local services
 
-## 8) If something is not working
+## Related docs
 
-1. Check env variable values first.
-2. Check backend is running on port `8000`.
-3. Check frontend is running on port `3000`.
-4. Check Stripe CLI is logged in (`stripe login`).
-5. Run `.\scripts\stop-all.bat`, then start again.
-
----
-
-## 9) Documentation policy (new clean structure)
-
-To keep this project easy and clear:
-
-- only one root `README.md`
-- only one `Frontend/README.md`
-- only one `Backend/README.md`
-
-All extra old markdown guides were removed to avoid confusion.
+- `Frontend/README.md` - frontend-specific guide
+- `Backend/README.md` - backend-specific guide

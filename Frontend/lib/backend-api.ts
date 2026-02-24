@@ -1,5 +1,16 @@
 import axios from "axios";
 import { authClient } from "./auth-client";
+
+type SessionData = {
+  token?: string;
+  sessionToken?: string;
+  session?: {
+    token?: string;
+    id?: string;
+    sessionToken?: string;
+  };
+};
+
 const backendApi = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://localhost:8000",
   headers: {
@@ -15,7 +26,7 @@ backendApi.interceptors.request.use(
           "📦 Full Session object:",
           JSON.stringify(session.data, null, 2),
         );
-        const sessionData = session.data as any;
+        const sessionData = session.data as SessionData;
         const token =
           sessionData.session?.token ||
           sessionData.token ||

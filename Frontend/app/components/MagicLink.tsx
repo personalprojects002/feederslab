@@ -37,10 +37,14 @@ export default function MagicLinkAuth() {
           "Email sent. Open your inbox and click the sign-in link (check spam if you don't see it).",
       });
       setEmail("");
-    } catch (err: any) {
+    } catch (err: unknown) {
       const message =
-        typeof err?.message === "string" && err.message.length
-          ? err.message
+        err &&
+        typeof err === "object" &&
+        "message" in err &&
+        typeof (err as { message?: string }).message === "string" &&
+        (err as { message?: string }).message?.length
+          ? (err as { message: string }).message
           : "Failed to send email. Please try again.";
       setStatus({ type: "error", message });
     } finally {
@@ -52,16 +56,20 @@ export default function MagicLinkAuth() {
     <div className="w-full">
       <form onSubmit={onSubmit} className="grid w-full gap-4">
         <div>
-          <label className="text-zinc-700 font-medium mb-1.5 block">
+          <label className="mb-2 block text-sm font-medium text-[#0B0B0C]">
             Email
           </label>
           <input
             type="email"
+            name="email"
+            autoComplete="email"
+            inputMode="email"
+            suppressHydrationWarning
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
             disabled={isSubmitting}
-            className="bg-zinc-50 border border-zinc-200 focus:ring-2 focus:ring-black focus:border-transparent rounded-lg p-3 transition-all text-zinc-900 placeholder:text-zinc-400 w-full"
+            className="h-11 w-full rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm text-[#0B0B0C] outline-none transition placeholder:text-gray-400 focus:border-[#0B0B0C]"
             required
           />
         </div>
@@ -69,7 +77,7 @@ export default function MagicLinkAuth() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="bg-black text-white hover:bg-zinc-800 rounded-lg py-3 font-semibold transition-all shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+          className="flex h-11 items-center justify-center rounded-xl bg-[#0B0B0C] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#1F2937] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting ? (
             <span
@@ -77,15 +85,18 @@ export default function MagicLinkAuth() {
               className="h-5 w-5 rounded-full border-2 border-white/30 border-t-white animate-spin"
             />
           ) : (
-            "Send login link"
+            "Send sign-in link"
           )}
         </button>
 
         {status.type === "success" && (
-          <p className="text-sm text-green-600">{status.message}</p>
+          <p className="text-sm text-green-700">{status.message}</p>
         )}
         {status.type === "error" && (
-          <p className="text-sm text-red-600">{status.message}</p>
+          <p className="text-sm text-red-700">
+            {status.message} If this continues, verify RESEND domain DNS and
+            check Spam/Promotions.
+          </p>
         )}
       </form>
     </div>

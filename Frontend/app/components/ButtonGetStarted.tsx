@@ -1,7 +1,6 @@
 "use client";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 interface ButtonGetStartedProps {
   className?: string;
@@ -12,19 +11,15 @@ export default function ButtonGetStarted({
   className,
   width,
 }: ButtonGetStartedProps) {
-  const [isClient, setIsClient] = useState(false);
   const dashboardURL = "/dashboard";
   const { data: session, isPending, error } = authClient.useSession();
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-  if (!isClient || isPending) {
+  if (isPending) {
     return (
       <Link
         href="/sign-in"
-        className={`btn btn-primary px-5 py-6 ${width ?? ""} ${
-          className ?? "rounded-3xl"
-        }`}
+        className={`inline-flex items-center justify-center bg-[#0B0B0C] text-white px-5 py-3 text-sm font-semibold transition-colors hover:bg-[#1F2937] ${
+          width ?? ""
+        } ${className ?? "rounded-xl"}`}
       >
         Get Started
       </Link>
@@ -35,9 +30,9 @@ export default function ButtonGetStarted({
     return (
       <Link
         href="/sign-in"
-        className={`btn btn-primary px-5 py-6 ${width ?? ""} ${
-          className ?? "rounded-3xl"
-        }`}
+        className={`inline-flex items-center justify-center bg-[#0B0B0C] text-white px-5 py-3 text-sm font-semibold transition-colors hover:bg-[#1F2937] ${
+          width ?? ""
+        } ${className ?? "rounded-xl"}`}
       >
         Get Started
       </Link>
@@ -55,9 +50,9 @@ export default function ButtonGetStarted({
     return (
       <Link
         href={dashboardURL}
-        className={`btn btn-primary px-5 py-6 ${width ?? ""} ${
-          className ?? "rounded-3xl"
-        }`}
+        className={`inline-flex items-center justify-center bg-[#0B0B0C] text-white px-5 py-3 text-sm font-semibold transition-colors hover:bg-[#1F2937] ${
+          width ?? ""
+        } ${className ?? "rounded-xl"}`}
       >
         {`Welcome ${displayName}`}
       </Link>
@@ -67,9 +62,9 @@ export default function ButtonGetStarted({
   return (
     <Link
       href="/sign-in"
-      className={`btn btn-primary px-5 py-6 ${width ?? ""} ${
-        className ?? "rounded-3xl"
-      }`}
+      className={`inline-flex items-center justify-center bg-[#0B0B0C] text-white px-5 py-3 text-sm font-semibold transition-colors hover:bg-[#1F2937] ${
+        width ?? ""
+      } ${className ?? "rounded-xl"}`}
     >
       Get Started
     </Link>

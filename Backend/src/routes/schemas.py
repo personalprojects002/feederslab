@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
+from typing import Optional
 
 # ==================== Board Schemas ====================
 
@@ -74,6 +75,11 @@ class PortalResponse(BaseModel):
     """
 
     url: str
+
+
+class BillingStatusResponse(BaseModel):
+    has_access: bool
+    customer_id: Optional[str] = None
 
 
 # ==================== Common Schemas ====================

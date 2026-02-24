@@ -14,10 +14,41 @@ from sqlmodel import Session
 
 from src.config.db import get_session
 from src.middlewares.auth import CurrentUser
-from src.routes.schemas import CheckoutRequest, CheckoutResponse, PortalResponse
+from src.routes.schemas import (
+    BillingStatusResponse,
+    CheckoutRequest,
+    CheckoutResponse,
+    PortalResponse,
+)
 from src.services.stripe_service import StripeService
 
 router = APIRouter(prefix="/billing", tags=["billing"])
+
+
+@router.get("/status", response_model=BillingStatusResponse)
+def get_billing_status(
+    user_email: CurrentUser, session: Session = Depends(get_session)
+):
+    """
+    Return billing status for the current user
+
+    Response:
+    {
+        "has_access": true/false,
+        "customer_id": "cus_..." | null
+    }
+    """
+    stripe_service = StripeService(session)
+    user = stripe_service.get_user_by_email(user_email)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+
+    return BillingStatusResponse(
+        has_access=bool(user.has_access), customer_id=user.customer_id
+    )
 
 
 @router.post(

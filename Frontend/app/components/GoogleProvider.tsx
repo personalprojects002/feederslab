@@ -24,7 +24,7 @@ export default function GoogleAuth() {
     <button
       onClick={handleSignIn}
       disabled={isPending}
-      className="w-full flex items-center justify-center gap-3 bg-white text-zinc-900 border border-zinc-200 hover:bg-zinc-50 font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+      className="flex w-full items-center justify-center gap-3 rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm font-semibold text-[#0B0B0C] transition-colors hover:bg-[#F9FAFB] disabled:cursor-not-allowed disabled:opacity-60"
     >
       <svg
         className="w-5 h-5"

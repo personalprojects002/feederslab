@@ -7,7 +7,18 @@ import { Suspense } from "react";
 export default function Providers({ children }: { children: ReactNode }) {
   return (
     <>
-      <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+      <Suspense
+        fallback={
+          <div
+            className="flex min-h-screen items-center justify-center"
+            aria-busy="true"
+          >
+            <span className="loading loading-spinner loading-lg" />
+          </div>
+        }
+      >
+        {children}
+      </Suspense>
       <Toaster
         position="top-center"
         toastOptions={{

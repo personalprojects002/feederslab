@@ -7,30 +7,28 @@ import backendApi from "@/lib/backend-api";
 
 export default function NewBoard() {
   const router = useRouter();
-
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (isLoading) return;
 
     setIsLoading(true);
 
     try {
-      // API Call: POST /boards/
-      // Token is automatically included by backendApi interceptor
       const response = await backendApi.post("/boards/", {
         boardName: name,
       });
 
       console.log("Board created successfully:", response.data);
-      toast.success("Board Created");
-
+      toast.success("Board created");
       setName("");
 
-      // Trigger a refresh to update the BoardList component
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("boards:changed"));
+      }
+
       router.refresh();
     } catch (error: unknown) {
       let errorMessage = "Something went wrong";
@@ -55,46 +53,45 @@ export default function NewBoard() {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-base-100 w-full max-w-md rounded-3xl shadow-xl border border-base-200"
-    >
-      <div className="p-8 flex flex-col gap-6">
+    <form onSubmit={handleSubmit} className="w-full">
+      <div className="flex flex-col gap-6">
         <div>
-          <h1 className="text-2xl font-bold text-base-content tracking-tight">
-            Create a new Board
-          </h1>
-          <p className="text-base-content/60 text-sm mt-1">
-            Start collecting feedback in seconds
+          <h2 className="text-xl font-semibold tracking-tight text-[#0B0B0C] md:text-2xl">
+            Create a new board
+          </h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Give your board a clear name so your team can start collecting
+            useful feedback.
           </p>
         </div>
 
-        <div className="w-full">
-          <label className="label">
-            <span className="label-text text-base-content">Board Name</span>
-          </label>
+        <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+          <div>
+            <label className="mb-2 block text-sm font-medium text-[#0B0B0C]">
+              Board name
+            </label>
+            <input
+              type="text"
+              required
+              value={name}
+              placeholder="e.g. Feature Requests"
+              onChange={(e) => setName(e.target.value)}
+              disabled={isLoading}
+              className="h-12 w-full rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm text-[#0B0B0C] outline-none transition focus:border-[#0B0B0C]"
+            />
+          </div>
 
-          <input
-            type="text"
-            required
-            value={name}
-            placeholder="e.g. Feature Requests"
-            onChange={(e) => setName(e.target.value)}
-            disabled={isLoading}
-            className="input input-bordered w-full h-12 px-4 rounded-2xl focus:outline-none focus:border-black/30 focus:ring-1 focus:ring-black/10 transition-all duration-200 bg-base-50"
-          />
+          <button
+            type="submit"
+            className="inline-flex h-12 items-center justify-center rounded-xl bg-[#0B0B0C] px-6 text-sm font-semibold text-white transition-colors hover:bg-[#1F2937]"
+          >
+            {isLoading ? (
+              <span className="loading loading-spinner loading-sm"></span>
+            ) : (
+              "Create board"
+            )}
+          </button>
         </div>
-
-        <button
-          type="submit"
-          className="btn btn-primary w-full h-12 rounded-xl shadow-lg hover:shadow-primary/40 transition-all duration-300 font-semibold text-lg"
-        >
-          {isLoading ? (
-            <span className="loading loading-spinner loading-sm"></span>
-          ) : (
-            "Create Board"
-          )}
-        </button>
       </div>
     </form>
   );

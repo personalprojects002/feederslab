@@ -1,50 +1,37 @@
-# Frontend README (Next.js)
+# Frontend (Next.js)
 
-This folder has the frontend (UI) of the project.
+This folder contains the client application for FeedersLab.
 
-UI means what users see in browser:
+## What this frontend does
 
-- pages,
-- forms,
-- buttons,
-- dashboard screens.
+- Renders landing page and pricing
+- Handles sign-in (magic link + Google)
+- Shows user dashboard and board pages
+- Calls backend APIs for boards and billing
+- Starts checkout or billing portal flows
 
----
+## Tech used in frontend
 
-## 1) What this frontend does
+- Next.js 16 (App Router)
+- React 19 + TypeScript
+- Tailwind CSS + DaisyUI
+- Better Auth + `@better-auth/client`
+- Axios
+- React Hot Toast
 
-- Shows auth pages (sign in / sign up).
-- Calls backend APIs.
-- Lets user start subscription checkout.
-- Shows board-related screens.
+## Important folders and files
 
----
+- `app/` - routes and pages
+- `app/components/` - reusable UI components
+- `app/dashboard/` - private authenticated screens
+- `app/sign-in/` - authentication page
+- `lib/backend-api.ts` - axios client for backend
+- `lib/auth-client.ts` - Better Auth client usage
+- `lib/better-auth.ts` - Better Auth server config
 
-## 2) Folder map (important files)
+## Environment variables
 
-- `app/` → routes and pages
-- `app/components/` → reusable UI components
-- `lib/backend-api.ts` → API client for backend requests
-- `lib/better-auth.ts` → auth server config
-- `lib/auth-client.ts` → auth client config
-- `public/` → static files (images etc.)
-
----
-
-## 3) Prerequisites
-
-Install first:
-
-- Node.js 18+
-- npm (comes with Node.js)
-
----
-
-## 4) Environment file (`Frontend/.env.local`)
-
-Create `.env.local` in this folder.
-
-Use this template:
+Create `Frontend/.env.local`:
 
 ```env
 NEXT_PUBLIC_BACKEND_API_URL=http://localhost:8000
@@ -59,72 +46,63 @@ RESEND_KEY=re_your_resend_api_key
 RESEND_FROM=noreply@yourdomain.com
 ```
 
-Simple meaning:
+Meaning:
 
-- `NEXT_PUBLIC_BACKEND_API_URL` = backend base URL
-- `NEXT_PUBLIC_BETTER_AUTH_URL` = frontend base URL
-- `BETTER_AUTH_SECRET` = auth safety secret
-- `GOOGLE_ID`, `GOOGLE_SECRET` = Google login keys
-- `RESEND_KEY`, `RESEND_FROM` = email sender setup
+- `NEXT_PUBLIC_BACKEND_API_URL`: backend base URL
+- `NEXT_PUBLIC_BETTER_AUTH_URL`: frontend app URL
+- `BETTER_AUTH_SECRET`: auth signing secret
+- `GOOGLE_ID` / `GOOGLE_SECRET`: Google OAuth credentials
+- `RESEND_KEY` / `RESEND_FROM`: email delivery credentials
 
----
+## Commands
 
-## 5) Install dependencies
-
-From project root:
+Install dependencies:
 
 ```powershell
 cd Frontend
 npm install
 ```
 
----
-
-## 6) Run frontend
-
-From project root:
+Run development server:
 
 ```powershell
-cd Frontend
 npm run dev
 ```
 
-After start:
-
-- App URL: `http://localhost:3000`
-
----
-
-## 7) Build for production
+Run lint:
 
 ```powershell
-cd Frontend
+npm run lint
+```
+
+Production build:
+
+```powershell
 npm run build
 npm start
 ```
 
----
+## Local URL
 
-## 8) Common issues and fixes
+- `http://localhost:3000`
 
-1. **Port 3000 already in use**
-   - Close old Node process
-   - Or run on another port
+## Frontend runtime requirements
 
-2. **Google login fails**
-   - Check `GOOGLE_ID` and `GOOGLE_SECRET`
-   - Check callback URL in Google Console
+- Backend must run on `http://localhost:8000`
+- Stripe checkout relies on backend billing endpoints
+- Magic-link email requires valid Resend credentials
 
-3. **API call fails**
-   - Check backend is running on `http://localhost:8000`
-   - Check `NEXT_PUBLIC_BACKEND_API_URL`
+## Common problems
 
----
+1. Port 3000 busy
+   - close previous Next.js process and rerun
 
-## 9) Quick start (minimum commands)
+2. Sign-in email not received
+   - verify `RESEND_KEY` and `RESEND_FROM`
+   - check spam folder and sender domain setup
 
-```powershell
-cd Frontend
-npm install
-npm run dev
-```
+3. Google login error
+   - verify OAuth credentials and callback settings
+
+4. API request errors
+   - verify backend is running and `NEXT_PUBLIC_BACKEND_API_URL` is correct
