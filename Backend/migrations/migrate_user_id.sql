@@ -8,7 +8,7 @@ ALTER TABLE board DROP CONSTRAINT IF EXISTS board_user_id_fkey;
 ALTER TABLE board ALTER COLUMN user_id TYPE TEXT USING user_id::TEXT;
 
 -- Step 3: Re-add the foreign key constraint
-ALTER TABLE board ADD CONSTRAINT board_user_id_fkey 
+ALTER TABLE board ADD CONSTRAINT board_user_id_fkey
     FOREIGN KEY (user_id) REFERENCES "user"(id) ON DELETE CASCADE;
 
 -- Verify the change

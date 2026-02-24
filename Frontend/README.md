@@ -1,56 +1,130 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend README (Next.js)
 
-## Getting Started
+This folder has the frontend (UI) of the project.
 
-First, run the development server:
+UI means what users see in browser:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- pages,
+- forms,
+- buttons,
+- dashboard screens.
+
+---
+
+## 1) What this frontend does
+
+- Shows auth pages (sign in / sign up).
+- Calls backend APIs.
+- Lets user start subscription checkout.
+- Shows board-related screens.
+
+---
+
+## 2) Folder map (important files)
+
+- `app/` → routes and pages
+- `app/components/` → reusable UI components
+- `lib/backend-api.ts` → API client for backend requests
+- `lib/better-auth.ts` → auth server config
+- `lib/auth-client.ts` → auth client config
+- `public/` → static files (images etc.)
+
+---
+
+## 3) Prerequisites
+
+Install first:
+
+- Node.js 18+
+- npm (comes with Node.js)
+
+---
+
+## 4) Environment file (`Frontend/.env.local`)
+
+Create `.env.local` in this folder.
+
+Use this template:
+
+```env
+NEXT_PUBLIC_BACKEND_API_URL=http://localhost:8000
+NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
+
+BETTER_AUTH_SECRET=your_minimum_32_character_secret_here
+
+GOOGLE_ID=your_google_oauth_client_id
+GOOGLE_SECRET=your_google_oauth_client_secret
+
+RESEND_KEY=re_your_resend_api_key
+RESEND_FROM=noreply@yourdomain.com
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Simple meaning:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `NEXT_PUBLIC_BACKEND_API_URL` = backend base URL
+- `NEXT_PUBLIC_BETTER_AUTH_URL` = frontend base URL
+- `BETTER_AUTH_SECRET` = auth safety secret
+- `GOOGLE_ID`, `GOOGLE_SECRET` = Google login keys
+- `RESEND_KEY`, `RESEND_FROM` = email sender setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Email (Resend) setup
+## 5) Install dependencies
 
-Magic link emails are sent via Resend.
+From project root:
 
-**Env vars**
+```powershell
+cd Frontend
+npm install
+```
 
-- `RESEND_KEY` – Resend API key
-- `RESEND_FROM` – optional but recommended. Example: `noreply@email.feeders.app` (or `Feeders <noreply@email.feeders.app>`)
+---
 
-**Avoiding spam (important)**
+## 6) Run frontend
 
-Deliverability is mostly DNS + domain verification (not just code):
+From project root:
 
-- Verify your sending domain in Resend (e.g. `feeders.app` or `email.feeders.app`).
-- Add the DNS records Resend provides (typically SPF + DKIM).
-- Add a DMARC record for your domain (recommended). A safe starter policy is:
-	- `_dmarc` → `v=DMARC1; p=none; adkim=s; aspf=s; pct=100`
+```powershell
+cd Frontend
+npm run dev
+```
 
-If your domain isn’t verified (or SPF/DKIM are missing), emails commonly land in spam.
+After start:
 
-## Learn More
+- App URL: `http://localhost:3000`
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 7) Build for production
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```powershell
+cd Frontend
+npm run build
+npm start
+```
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 8) Common issues and fixes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Port 3000 already in use**
+   - Close old Node process
+   - Or run on another port
+
+2. **Google login fails**
+   - Check `GOOGLE_ID` and `GOOGLE_SECRET`
+   - Check callback URL in Google Console
+
+3. **API call fails**
+   - Check backend is running on `http://localhost:8000`
+   - Check `NEXT_PUBLIC_BACKEND_API_URL`
+
+---
+
+## 9) Quick start (minimum commands)
+
+```powershell
+cd Frontend
+npm install
+npm run dev
+```
