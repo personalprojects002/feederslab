@@ -1,0 +1,26 @@
+# Environment files
+.env
+**/.env
+
+# Python virtual environments
+venv/
+.venv/
+**/venv/
+**/.venv/
+
+# Python cache
+__pycache__/
+**/__pycache__/
+*.pyc
+
+# Node dependencies
+node_modules/
+**/node_modules/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+
+# Temporary git metadata backups
+git_backup_*/
+**/git_backup_*/
