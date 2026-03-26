@@ -25,12 +25,12 @@ export default function Home() {
 
   return (
     <main>
-      <header className="border-b border-[#E5E7EB] bg-white/90 backdrop-blur">
-        <div className="shell flex h-20 items-center justify-between">
-          <div className="text-xl font-semibold tracking-tight text-[#0B0B0C] md:text-2xl">
+      <header className="border-b border-[#E5E7EB] bg-white/90 backdrop-blur sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex h-16 sm:h-20 items-center justify-between">
+          <div className="text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight text-[#0B0B0C]">
             FeedersLab
           </div>
-          <nav className="hidden items-center gap-10 text-base text-gray-600 md:flex">
+          <nav className="hidden md:flex items-center gap-6 lg:gap-10 text-sm lg:text-base text-gray-600">
             <a href="#product" className="hover:text-black transition-colors">
               Product
             </a>
@@ -41,34 +41,35 @@ export default function Home() {
               FAQ
             </a>
           </nav>
-          <ButtonGetStarted className="rounded-xl px-7 py-3 text-base" />
+          <ButtonGetStarted className="rounded-lg px-4 sm:px-6 lg:px-7 py-2 sm:py-2.5 lg:py-3 text-xs sm:text-sm lg:text-base" />
         </div>
       </header>
 
-      <section className="pt-10 pb-12 md:pt-12 md:pb-14">
-        <div className="shell grid items-center gap-8 md:gap-10 lg:grid-cols-2">
+      {/* Hero Section */}
+      <section className="pt-12 sm:pt-16 md:pt-20 pb-12 sm:pb-16 md:pb-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto grid items-center gap-8 sm:gap-12 md:gap-16 lg:grid-cols-2">
           <div className="order-2 lg:order-1">
-            <span className="eyebrow">Built for product teams</span>
-            <h1 className="mt-5 text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
+            <span className="text-xs sm:text-sm font-semibold text-gray-600 uppercase tracking-wide">Built for product teams</span>
+            <h1 className="mt-4 sm:mt-6 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               Collect customer feedback to build better products
             </h1>
-            <p className="muted-text mt-5 max-w-xl text-base leading-7 md:text-lg">
+            <p className="mt-4 sm:mt-6 max-w-xl text-sm sm:text-base md:text-lg leading-7 sm:leading-8 text-gray-600">
               Create a feedback board in minutes, prioritize features, and build
               products your customers will love.
             </p>
-            <div className="mt-7 flex flex-wrap items-center gap-3">
-              <ButtonGetStarted className="rounded-xl px-6 py-3" />
-              <Link href="#product" className="btn-secondary-premium">
+            <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-3 sm:gap-4">
+              <ButtonGetStarted className="rounded-lg px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base" />
+              <Link href="#product" className="px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base font-semibold border-2 border-black text-black hover:bg-black hover:text-white transition-colors rounded-lg">
                 See product
               </Link>
             </div>
-            <p className="mt-4 text-sm text-gray-500">
+            <p className="mt-6 text-xs sm:text-sm text-gray-500">
               Trusted workflow for focused teams.
             </p>
           </div>
 
           <div className="order-1 lg:order-2">
-            <div className="surface overflow-hidden p-2 shadow-sm">
+            <div className="overflow-hidden p-2 sm:p-3 md:p-4 shadow-lg rounded-2xl max-w-lg mx-auto">
               <Image
                 src={productDemo}
                 alt="FeedersLab product interface"
@@ -80,242 +81,132 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="pt-10 pb-10 border-y border-[#E5E7EB] bg-white/70 md:pt-14 md:pb-12">
-        <div className="shell">
-          <div className="mb-8 max-w-3xl">
-            <span className="eyebrow">Why this works</span>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
-              Make feedback easy to see and{" "}
-              <span className="whitespace-nowrap">easy to act on</span>
+      {/* Why it works section */}
+      <section className="bg-white py-12 sm:py-16 md:py-20 lg:py-32 px-4 sm:px-6 lg:px-8 border-t-4 sm:border-t-8 border-b-4 sm:border-b-8 border-gray-100">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-12 sm:mb-16 md:mb-20">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-black mb-4 sm:mb-6" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Make feedback easy to see and easy to act on
             </h2>
+            <div className="w-16 sm:w-20 md:w-24 h-1 bg-black"></div>
           </div>
-          <div className="grid gap-10 md:grid-cols-3">
-            <article className="border-l-2 border-[#E5E7EB] pl-5">
-              <p className="text-xs font-medium tracking-wide text-gray-500">
-                Problem
-              </p>
-              <h3 className="mt-3 text-xl font-semibold tracking-tight">
-                Feedback lives in too many places
-              </h3>
-              <p className="mt-3 text-sm leading-7 text-gray-600">
-                Requests get lost in calls, chats, and scattered notes.
-              </p>
-            </article>
-            <article className="border-l-2 border-[#E5E7EB] pl-5">
-              <p className="text-xs font-medium tracking-wide text-gray-500">
-                Approach
-              </p>
-              <h3 className="mt-3 text-xl font-semibold tracking-tight">
-                One clear place for every request
-              </h3>
-              <p className="mt-3 text-sm leading-7 text-gray-600">
-                Capture demand once and keep the whole team aligned.
-              </p>
-            </article>
-            <article className="border-l-2 border-[#E5E7EB] pl-5">
-              <p className="text-xs font-medium tracking-wide text-gray-500">
-                Result
-              </p>
-              <h3 className="mt-3 text-xl font-semibold tracking-tight">
-                Confident prioritization
-              </h3>
-              <p className="mt-3 text-sm leading-7 text-gray-600">
-                Decisions are faster because the signal stays visible.
-              </p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section id="product" className="pt-12 pb-12 md:pt-14 md:pb-14">
-        <div className="shell">
-          <div className="mb-12 max-w-2xl">
-            <span className="eyebrow">Product flow</span>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
-              A simple system your team actually uses
-            </h2>
-            <p className="muted-text mt-4 text-sm leading-7 md:text-base">
-              Set up a board, collect requests, and plan what ships without
-              losing context.
-            </p>
-          </div>
-
-          <div className="grid gap-10 md:grid-cols-3">
-            <article className="border-l-2 border-[#E5E7EB] pl-5">
-              <p className="text-sm text-gray-500">Step 01</p>
-              <h3 className="mt-2 text-xl font-semibold">Create a board</h3>
-              <p className="muted-text mt-3 text-sm leading-7 md:text-base">
-                Name it once and share it with your team in minutes.
-              </p>
-            </article>
-            <article className="border-l-2 border-[#E5E7EB] pl-5">
-              <p className="text-sm text-gray-500">Step 02</p>
-              <h3 className="mt-2 text-xl font-semibold">
-                Collect features feedback
-              </h3>
-              <p className="muted-text mt-3 text-sm leading-7 md:text-base">
-                Keep all requests together so nothing slips through.
-              </p>
-            </article>
-            <article className="border-l-2 border-[#E5E7EB] pl-5">
-              <p className="text-sm text-gray-500">Step 03</p>
-              <h3 className="mt-2 text-xl font-semibold">Plan what ships</h3>
-              <p className="muted-text mt-3 text-sm leading-7 md:text-base">
-                Decide faster because the tradeoffs are visible.
-              </p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section
-        id="pricing"
-        className="pt-12 pb-14 md:pt-14 md:pb-16 bg-white border-y border-[#E5E7EB]"
-      >
-        <div className="shell">
-          <div className="mx-auto mb-8 max-w-2xl text-center">
-            <span className="eyebrow">Pricing</span>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
-              Simple pricing that stays out of your way
-            </h2>
-            <p className="muted-text mt-3 text-sm leading-7 md:text-base">
-              One plan with everything you need to collect feedback, manage
-              boards, and keep the team aligned.
-            </p>
-          </div>
-
-          <div className="mx-auto surface w-full max-w-sm py-6 pl-5 pr-3 md:py-6 md:pl-6 md:pr-4">
-            <p className="text-sm font-medium text-gray-500">Monthly</p>
-            <div className="mt-2.5 flex items-baseline gap-2">
-              <span className="text-4xl font-semibold text-[#0B0B0C]">$19</span>
-              <span className="text-sm text-gray-500">per month</span>
+          <div className="grid gap-6 sm:gap-8 md:gap-12 md:grid-cols-3">
+            <div className="space-y-4 sm:space-y-6">
+              <div className="text-gray-600 font-bold text-xs sm:text-sm md:text-lg tracking-tight uppercase">Problem</div>
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold leading-tight text-black" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Feedback lives in too many places</h3>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">Emails, Slack messages, and meeting notes. Important requests get lost in the noise, leaving your team guessing what to build next.</p>
             </div>
-            <ul className="mt-5 space-y-2 text-sm text-gray-700">
-              <li className="flex items-center gap-2.5">
-                <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#D1D5DB]">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    className="block h-3 w-3"
-                  >
-                    <path
-                      d="M5 10.5L8.2 13.5L15 6.8"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
+            <div className="space-y-4 sm:space-y-6">
+              <div className="text-gray-600 font-bold text-xs sm:text-sm md:text-lg tracking-tight uppercase">Approach</div>
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold leading-tight text-black" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>One clear place for every request</h3>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">Give customers a dedicated space to share and upvote ideas. FeedersLab centralizes every insight into a single, organized dashboard.</p>
+            </div>
+            <div className="space-y-4 sm:space-y-6">
+              <div className="text-gray-600 font-bold text-xs sm:text-sm md:text-lg tracking-tight uppercase">Result</div>
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold leading-tight text-black" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Confident prioritization</h3>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">Focus your engineering resources on the features that will drive the most impact. Build with data-backed confidence.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Product Flow */}
+      <section id="product" className="py-12 sm:py-16 md:py-20 lg:py-32 px-4 sm:px-6 lg:px-8 bg-gray-50 border-t-4 sm:border-t-8 border-b-4 sm:border-b-8 border-gray-100">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12 sm:mb-16 md:mb-24">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-black" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>A simple system your team actually uses</h2>
+          </div>
+          <div className="relative">
+            <div className="hidden md:block absolute top-1/2 left-0 w-full h-px bg-gray-300 -translate-y-1/2 z-0"></div>
+            <div className="grid gap-6 sm:gap-8 md:gap-12 lg:gap-16 md:grid-cols-3 relative z-10">
+              <div className="bg-white p-6 sm:p-8 md:p-10 rounded-xl shadow-md border border-gray-200">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-black text-white rounded-full flex items-center justify-center font-bold text-lg sm:text-xl mb-6 sm:mb-8">1</div>
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 text-black" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Create a board</h3>
+                <p className="text-sm sm:text-base text-gray-600">Set up your public or private feedback board in less than 2 minutes. Brand it to match your product.</p>
+              </div>
+              <div className="bg-white p-6 sm:p-8 md:p-10 rounded-xl shadow-md border border-gray-200">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-black text-white rounded-full flex items-center justify-center font-bold text-lg sm:text-xl mb-6 sm:mb-8">2</div>
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 text-black" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Collect features feedback</h3>
+                <p className="text-sm sm:text-base text-gray-600">Direct your users to one link. Let them submit ideas and upvote existing ones from other users.</p>
+              </div>
+              <div className="bg-white p-6 sm:p-8 md:p-10 rounded-xl shadow-md border border-gray-200">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-black text-white rounded-full flex items-center justify-center font-bold text-lg sm:text-xl mb-6 sm:mb-8">3</div>
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 text-black" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Plan what ships</h3>
+                <p className="text-sm sm:text-base text-gray-600">Sort requests by vote count or customer segments. Move the best ideas to your public roadmap.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Simple Pricing */}
+      <section id="pricing" className="py-12 sm:py-16 md:py-20 lg:py-32 px-4 sm:px-6 lg:px-8 bg-white border-t-4 sm:border-t-8 border-b-4 sm:border-b-8 border-gray-100">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-8 sm:mb-12 md:mb-16 text-black" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Simple, transparent pricing</h2>
+          <div className="bg-white rounded-2xl p-6 sm:p-8 md:p-12 shadow-lg border border-gray-200 text-left">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 sm:mb-8 pb-6 sm:pb-8 border-b border-gray-200 gap-4">
+              <div>
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-black" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Standard Plan</h3>
+                <p className="text-sm sm:text-base text-gray-600 mt-1">Everything you need to grow.</p>
+              </div>
+              <div className="flex-shrink-0">
+                <span className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-black">$19</span>
+                <span className="text-gray-600 font-medium text-xs sm:text-sm md:text-base">/mo</span>
+              </div>
+            </div>
+            <ul className="space-y-3 sm:space-y-4 md:space-y-6 mb-8 sm:mb-10 md:mb-12">
+              <li className="flex items-start md:items-center gap-3 text-black text-sm sm:text-base">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-black flex-shrink-0 mt-0.5 md:mt-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
                 <span>Collect customer feedback</span>
               </li>
-              <li className="flex items-center gap-2.5">
-                <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#D1D5DB]">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    className="block h-3 w-3"
-                  >
-                    <path
-                      d="M5 10.5L8.2 13.5L15 6.8"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
+              <li className="flex items-start md:items-center gap-3 text-black text-sm sm:text-base">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-black flex-shrink-0 mt-0.5 md:mt-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
                 <span>Unlimited boards</span>
               </li>
-              <li className="flex items-center gap-2.5">
-                <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#D1D5DB]">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    className="block h-3 w-3"
-                  >
-                    <path
-                      d="M5 10.5L8.2 13.5L15 6.8"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
+              <li className="flex items-start md:items-center gap-3 text-black text-sm sm:text-base">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-black flex-shrink-0 mt-0.5 md:mt-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
                 <span>Admin dashboard</span>
               </li>
-              <li className="flex items-center gap-2.5">
-                <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#D1D5DB]">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    className="block h-3 w-3"
-                  >
-                    <path
-                      d="M5 10.5L8.2 13.5L15 6.8"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
+              <li className="flex items-start md:items-center gap-3 text-black text-sm sm:text-base">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-black flex-shrink-0 mt-0.5 md:mt-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
                 <span>24/7 support</span>
               </li>
             </ul>
-            <div className="mt-5">
-              <ButtonGetStarted className="rounded-xl px-3 py-2 text-sm text-center" />
-            </div>
+            <ButtonGetStarted className="w-full rounded-lg py-3 sm:py-4 md:py-5 text-sm sm:text-base" />
           </div>
         </div>
       </section>
 
-      <section id="faq" className="section">
-        <div className="shell">
-          <div className="mb-10 max-w-2xl">
-            <span className="eyebrow">FAQ</span>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
-              Straight answers before you start
-            </h2>
-          </div>
-
-          <div className="divide-y divide-[#E5E7EB] border-t border-[#E5E7EB]">
+      {/* FAQ */}
+      <section id="faq" className="py-12 sm:py-16 md:py-20 lg:py-32 px-4 sm:px-6 lg:px-8 bg-gray-50 border-t-4 sm:border-t-8 border-b-4 sm:border-b-8 border-gray-100">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-8 sm:mb-12 md:mb-16 text-center text-black" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Frequently Asked Questions</h2>
+          <div className="space-y-3 sm:space-y-4">
             {faqs.map((item) => (
-              <div
-                key={item.q}
-                className="grid gap-3 py-6 md:grid-cols-[220px_1fr] md:items-start"
-              >
-                <h3 className="text-base font-semibold tracking-tight text-[#0B0B0C]">
-                  {item.q}
-                </h3>
-                <p className="muted-text text-sm leading-7 md:text-base">
-                  {item.a}
-                </p>
+              <div key={item.q} className="bg-white rounded-lg p-4 sm:p-6 md:p-8 border border-gray-200">
+                <h4 className="font-bold text-base sm:text-lg md:text-xl mb-2 sm:mb-3 md:mb-4 text-black" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{item.q}</h4>
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed">{item.a}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="pb-20">
-        <div className="shell">
-          <div className="surface p-8 text-center md:p-12">
-            <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
-              Build with clarity. Ship with confidence.
-            </h2>
-            <p className="muted-text mx-auto mt-4 max-w-2xl leading-7">
-              Start your first feedback board and create a reliable product
-              decision system for your team.
-            </p>
-            <div className="mt-8 flex justify-center">
-              <ButtonGetStarted className="rounded-xl px-6 py-3" />
-            </div>
-          </div>
+      {/* Final CTA */}
+      <section className="py-12 sm:py-16 md:py-20 lg:py-32 px-4 sm:px-6 lg:px-8 bg-black text-white border-t-4 sm:border-t-8 border-b-4 sm:border-b-8 border-gray-900">
+        <div className="max-w-5xl mx-auto text-center">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight mb-8 sm:mb-10 leading-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            Build with clarity. <br/>Ship with confidence.
+          </h2>
+          <ButtonGetStarted className="rounded-lg py-3 sm:py-4 md:py-5 px-8 sm:px-10 text-sm sm:text-base" variant="light" />
         </div>
       </section>
     </main>
