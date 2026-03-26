@@ -1,6 +1,7 @@
-from datetime import datetime, timezone
+from datetime import datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
 from src.models.board import Board
@@ -64,7 +65,9 @@ class BoardService:
         return list(boards)
 
     async def get_board_by_id(self, board_id: int, user_email: str) -> Board | None:
-        result = await self.session.execute(select(Board).where(Board.id == board_id))
+        result = await self.session.execute(
+            select(Board).where(Board.id == board_id).options(selectinload(Board.user))
+        )
         board = result.scalars().first()
 
         if not board:
@@ -82,7 +85,9 @@ class BoardService:
     async def update_board(
         self, board_id: int, board_name: str, user_email: str
     ) -> Board | None:
-        result = await self.session.execute(select(Board).where(Board.id == board_id))
+        result = await self.session.execute(
+            select(Board).where(Board.id == board_id).options(selectinload(Board.user))
+        )
         board = result.scalars().first()
 
         if not board:
@@ -96,7 +101,7 @@ class BoardService:
             raise PermissionError("Not authorized to update this board")
 
         board.board_name = board_name
-        board.updated_at = datetime.now(timezone.utc)
+        board.updated_at = datetime.now()
 
         self.session.add(board)
         await self.session.commit()
@@ -105,7 +110,9 @@ class BoardService:
         return board
 
     async def delete_board(self, board_id: int, user_email: str) -> bool:
-        result = await self.session.execute(select(Board).where(Board.id == board_id))
+        result = await self.session.execute(
+            select(Board).where(Board.id == board_id).options(selectinload(Board.user))
+        )
         board = result.scalars().first()
 
         if not board:
