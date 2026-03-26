@@ -10,7 +10,7 @@ All routes require authentication (JWT token in Authorization header).
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.db import get_session
 from src.middlewares.auth import CurrentUser
@@ -26,8 +26,8 @@ router = APIRouter(prefix="/billing", tags=["billing"])
 
 
 @router.get("/status", response_model=BillingStatusResponse)
-def get_billing_status(
-    user_email: CurrentUser, session: Session = Depends(get_session)
+async def get_billing_status(
+    user_email: CurrentUser, session: AsyncSession = Depends(get_session)
 ):
     """
     Return billing status for the current user
@@ -39,7 +39,7 @@ def get_billing_status(
     }
     """
     stripe_service = StripeService(session)
-    user = stripe_service.get_user_by_email(user_email)
+    user = await stripe_service.get_user_by_email(user_email)
 
     if not user:
         raise HTTPException(
@@ -54,10 +54,10 @@ def get_billing_status(
 @router.post(
     "/create-checkout", response_model=CheckoutResponse, status_code=status.HTTP_200_OK
 )
-def create_checkout_session(
+async def create_checkout_session(
     body: CheckoutRequest,
     user_email: CurrentUser,
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_session),
 ):
     """
     Create Stripe checkout session for subscription purchase
@@ -103,7 +103,7 @@ def create_checkout_session(
 
         # Step 3: Find user by email (from JWT token)
         # Same as: const user = await User.findById(session.user.id);
-        user = stripe_service.get_user_by_email(user_email)
+        user = await stripe_service.get_user_by_email(user_email)
 
         if not user:
             raise HTTPException(
@@ -118,7 +118,7 @@ def create_checkout_session(
 
         # Step 4: Create Stripe checkout session
         # Same as: await stripe.checkout.sessions.create({...})
-        checkout_url = stripe_service.create_checkout_session(
+        checkout_url = await stripe_service.create_checkout_session(
             user_email=user.email,
             user_id=user.id,
             success_url=body.success_url,
@@ -146,8 +146,8 @@ def create_checkout_session(
 @router.post(
     "/create-portal", response_model=PortalResponse, status_code=status.HTTP_200_OK
 )
-def create_portal_session(
-    user_email: CurrentUser, session: Session = Depends(get_session)
+async def create_portal_session(
+    user_email: CurrentUser, session: AsyncSession = Depends(get_session)
 ):
     """
     Create Stripe customer portal session for subscription management
@@ -177,7 +177,7 @@ def create_portal_session(
         stripe_service = StripeService(session)
 
         # Step 2: Find user by email (from JWT token)
-        user = stripe_service.get_user_by_email(user_email)
+        user = await stripe_service.get_user_by_email(user_email)
 
         if not user:
             raise HTTPException(
@@ -193,7 +193,7 @@ def create_portal_session(
 
         # Step 4: Create Stripe portal session
         # Same as: await stripe.billingPortal.sessions.create({...})
-        portal_url = stripe_service.create_portal_session(user_email)
+        portal_url = await stripe_service.create_portal_session(user_email)
 
         # Step 5: Return portal URL
         # Same as: return NextResponse.json({ url: portalSession.url });

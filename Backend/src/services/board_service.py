@@ -1,16 +1,17 @@
 from datetime import datetime, timezone
 
-from sqlmodel import Session, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
 
 from src.models.board import Board
 from src.models.user import User
 
 
 class BoardService:
-    def __init__(self, session: Session):
+    def __init__(self, session: AsyncSession):
         self.session = session
 
-    def create_board(self, board_name: str, user_email: str) -> Board:
+    async def create_board(self, board_name: str, user_email: str) -> Board:
         """
         Create a new board for authenticated user
 
@@ -23,7 +24,8 @@ class BoardService:
         4. Create board
         5. Return board
         """
-        user = self.session.exec(select(User).where(User.email == user_email)).first()
+        result = await self.session.exec(select(User).where(User.email == user_email))
+        user = result.first()
 
         if not user:
             raise ValueError("You are not allowed to create a board")
@@ -41,26 +43,29 @@ class BoardService:
         new_board = Board(board_name=board_name, user_id=user.id)
 
         self.session.add(new_board)
-        self.session.commit()
-        self.session.refresh(new_board)
+        await self.session.commit()
+        await self.session.refresh(new_board)
 
         return new_board
 
-    def get_all_boards(self, user_email: str) -> list[Board]:
-        user = self.session.exec(select(User).where(User.email == user_email)).first()
+    async def get_all_boards(self, user_email: str) -> list[Board]:
+        result = await self.session.exec(select(User).where(User.email == user_email))
+        user = result.first()
 
         if not user:
             raise ValueError("User not found")
 
         # Query boards directly instead of using relationship
-        boards = self.session.exec(
+        boards_result = await self.session.exec(
             select(Board).where(Board.user_id == user.id)
-        ).all()
+        )
+        boards = boards_result.all()
 
         return list(boards)
 
-    def get_board_by_id(self, board_id: int, user_email: str) -> Board | None:
-        board = self.session.exec(select(Board).where(Board.id == board_id)).first()
+    async def get_board_by_id(self, board_id: int, user_email: str) -> Board | None:
+        result = await self.session.exec(select(Board).where(Board.id == board_id))
+        board = result.first()
 
         if not board:
             return None
@@ -74,10 +79,11 @@ class BoardService:
 
         return board
 
-    def update_board(
+    async def update_board(
         self, board_id: int, board_name: str, user_email: str
     ) -> Board | None:
-        board = self.session.exec(select(Board).where(Board.id == board_id)).first()
+        result = await self.session.exec(select(Board).where(Board.id == board_id))
+        board = result.first()
 
         if not board:
             return None
@@ -93,13 +99,14 @@ class BoardService:
         board.updated_at = datetime.now(timezone.utc)
 
         self.session.add(board)
-        self.session.commit()
-        self.session.refresh(board)
+        await self.session.commit()
+        await self.session.refresh(board)
 
         return board
 
-    def delete_board(self, board_id: int, user_email: str) -> bool:
-        board = self.session.exec(select(Board).where(Board.id == board_id)).first()
+    async def delete_board(self, board_id: int, user_email: str) -> bool:
+        result = await self.session.exec(select(Board).where(Board.id == board_id))
+        board = result.first()
 
         if not board:
             return False
@@ -111,7 +118,7 @@ class BoardService:
         if board.user.email != user_email:
             raise PermissionError("Not authorized to delete this board")
 
-        self.session.delete(board)
-        self.session.commit()
+        await self.session.delete(board)
+        await self.session.commit()
 
         return True

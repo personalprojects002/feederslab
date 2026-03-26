@@ -32,10 +32,21 @@ if (!resendKey) {
   throw new Error("Missing RESEND_KEY. Please set RESEND_KEY in your .env");
 }
 
+// Get the base URL - support dynamic ports
+const getBaseURL = () => {
+  if (process.env.NEXT_PUBLIC_BETTER_AUTH_URL) {
+    return process.env.NEXT_PUBLIC_BETTER_AUTH_URL;
+  }
+  // Default to localhost with any port
+  return "http://localhost:3000";
+};
+
 export const auth = betterAuth({
   appName: "Feeders",
   database: pool,
   secret: authSecret,
+  trustHost: true,
+  baseURL: getBaseURL(),
 
   socialProviders: {
     google: {

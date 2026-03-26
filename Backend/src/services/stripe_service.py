@@ -13,7 +13,8 @@ All Stripe operations use the same API version and structure as the TypeScript i
 from typing import Optional
 
 import stripe
-from sqlmodel import Session, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
 
 from src.config.settings import STRIPE_PRICE_ID, STRIPE_SECRET_KEY
 from src.models.user import User
@@ -33,14 +34,14 @@ class StripeService:
     - app/api/billing/create-portal/route.ts
     """
 
-    def __init__(self, session: Session):
+    def __init__(self, session: AsyncSession):
         self.session = session
         self.stripe = stripe
         self.stripe.api_key = STRIPE_SECRET_KEY
         # EXACT same API version as TypeScript
         self.stripe.api_version = "2025-12-15.clover"
 
-    def get_user_by_email(self, email: str) -> Optional[User]:
+    async def get_user_by_email(self, email: str) -> Optional[User]:
         """
         Get user by email address
 
@@ -51,10 +52,11 @@ class StripeService:
             User object or None if not found
         """
         statement = select(User).where(User.email == email)
-        user = self.session.exec(statement).first()
+        result = await self.session.exec(statement)
+        user = result.first()
         return user
 
-    def get_user_by_id(self, user_id: str) -> Optional[User]:
+    async def get_user_by_id(self, user_id: str) -> Optional[User]:
         """
         Get user by ID
 
@@ -65,10 +67,11 @@ class StripeService:
             User object or None if not found
         """
         statement = select(User).where(User.id == user_id)
-        user = self.session.exec(statement).first()
+        result = await self.session.exec(statement)
+        user = result.first()
         return user
 
-    def create_checkout_session(
+    async def create_checkout_session(
         self, user_email: str, user_id: str, success_url: str, cancel_url: str
     ) -> str:
         """
@@ -129,7 +132,7 @@ class StripeService:
         except Exception as e:
             raise ValueError(f"Failed to create checkout session: {str(e)}")
 
-    def create_portal_session(self, user_email: str) -> str:
+    async def create_portal_session(self, user_email: str) -> str:
         """
         Create Stripe customer portal session
 
@@ -154,7 +157,7 @@ class StripeService:
                 return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
             });
         """
-        user = self.get_user_by_email(user_email)
+        user = await self.get_user_by_email(user_email)
 
         if not user:
             raise ValueError("User not found")
@@ -175,7 +178,7 @@ class StripeService:
         except Exception as e:
             raise ValueError(f"Failed to create portal session: {str(e)}")
 
-    def handle_checkout_completed(self, session_data: dict) -> None:
+    async def handle_checkout_completed(self, session_data: dict) -> None:
         """
         Handle successful checkout completion
 
@@ -204,7 +207,7 @@ class StripeService:
         if not user_id:
             raise ValueError("client_reference_id not found in session data")
 
-        user = self.get_user_by_id(user_id)  # Now user_id is a string
+        user = await self.get_user_by_id(user_id)  # Now user_id is a string
 
         if not user:
             raise ValueError("User not found")
@@ -214,10 +217,10 @@ class StripeService:
         user.customer_id = customer_id
 
         self.session.add(user)
-        self.session.commit()
-        self.session.refresh(user)
+        await self.session.commit()
+        await self.session.refresh(user)
 
-    def handle_subscription_deleted(self, subscription_data: dict) -> None:
+    async def handle_subscription_deleted(self, subscription_data: dict) -> None:
         """
         Handle subscription cancellation
 
@@ -243,14 +246,15 @@ class StripeService:
             return
 
         statement = select(User).where(User.customer_id == customer_id)
-        user = self.session.exec(statement).first()
+        result = await self.session.exec(statement)
+        user = result.first()
 
         if user:
             # Revoke access - EXACT same logic as TypeScript
             user.has_access = False
             self.session.add(user)
-            self.session.commit()
-            self.session.refresh(user)
+            await self.session.commit()
+            await self.session.refresh(user)
 
     def _get_app_url(self) -> str:
         """

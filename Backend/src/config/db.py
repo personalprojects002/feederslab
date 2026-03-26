@@ -1,30 +1,20 @@
-from sqlmodel import Session, create_engine
-
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 from src.config.settings import DATABASE_URL
 
-connection_string = str(DATABASE_URL).replace("postgresql://", "postgresql+psycopg2://")
-engine = create_engine(
-    connection_string, connect_args={"sslmode": "require"}, pool_recycle=300
+# Convert connection string to asyncpg format
+connection_string = str(DATABASE_URL).replace("postgresql://", "postgresql+asyncpg://")
+# Remove sslmode parameter as asyncpg handles it differently
+connection_string = connection_string.replace("?sslmode=require", "")
+connection_string = connection_string.replace("&sslmode=require", "")
+
+engine = create_async_engine(
+    connection_string,
+    pool_pre_ping=True,
+    connect_args={"ssl": True}
 )
+async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
-
-def get_session():
-    with (
-        Session(engine) as session
-    ):  # so with keyword is a context manager which create and destroy session
-        yield session  # Yield is use to Pause and Give
-
-
-# # 1. THIS IS YOUR ORIGINAL CODE (The "Automatic" Way)
-# def get_session():
-#     with Session(engine) as session: # <--- Step A: Open connection
-#         yield session                # <--- Step B: Pause & Give connection
-#     # <--- Step C: (Hidden) Connection closes automatically here after use
-
-# # 2. THIS IS THE "BEHIND THE SCENES" VIEW (The "Manual" Way)
-# def get_session_manual():
-#     session = Session(engine)        # <--- Step A: Open connection
-#     try:
-#         yield session                # <--- Step B: Pause & Give connection
-#     finally:
-#         session.close()              # <--- Step C: This runs ONLY AFTER the yield is finished
+async def get_session():
+    async with async_session_maker() as session:
+        yield session

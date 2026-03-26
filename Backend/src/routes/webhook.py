@@ -14,7 +14,7 @@ All webhook signatures are verified using Stripe's signature verification.
 
 import stripe
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
-from sqlmodel import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.db import get_session
 from src.config.settings import STRIPE_WEBHOOK_SECRET
@@ -27,7 +27,7 @@ router = APIRouter(tags=["webhook"])
 async def stripe_webhook(
     request: Request,
     stripe_signature: str = Header(None, alias="stripe-signature"),
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_session),
 ):
     """
     Handle Stripe webhook events
@@ -120,7 +120,7 @@ async def stripe_webhook(
         if event_type == "checkout.session.completed":
             print(f"\n💳 Processing checkout.session.completed...")
             try:
-                stripe_service.handle_checkout_completed(event_data)
+                await stripe_service.handle_checkout_completed(event_data)
                 print(f"✅ Checkout completed successfully!")
                 print(f"   Customer ID: {event_data.get('customer')}")
                 print(f"   User ID: {event_data.get('client_reference_id')}")
@@ -136,7 +136,7 @@ async def stripe_webhook(
         elif event_type == "customer.subscription.deleted":
             print(f"\n⛔ Processing customer.subscription.deleted...")
             try:
-                stripe_service.handle_subscription_deleted(event_data)
+                await stripe_service.handle_subscription_deleted(event_data)
                 print(f"✅ Subscription cancelled - access revoked")
             except Exception as e:
                 print(f"❌ ERROR: {str(e)}")

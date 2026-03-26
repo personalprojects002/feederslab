@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import backendApi from "@/lib/backend-api";
 import ButtonCheckout from "./ButtonCheckout";
 import ButtonPortal from "./ButtonPortal";
+import axios from "axios";
 
 type BillingStatus = {
   has_access: boolean;
@@ -23,7 +24,12 @@ export default function BillingActionButton() {
         if (isMounted) {
           setStatus(response.data);
         }
-      } catch {
+      } catch (error) {
+        if (axios.isAxiosError(error) && !error.response) {
+          console.warn(
+            "Billing status request failed at network layer; defaulting to checkout state",
+          );
+        }
         if (isMounted) {
           setStatus({ has_access: false, customer_id: null });
         }

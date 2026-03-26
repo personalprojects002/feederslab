@@ -1,27 +1,37 @@
-from starlette.config import Config
-from starlette.datastructures import Secret
+import os
+from dotenv import load_dotenv
 
-try:
-    config = Config(".env")
-except FileNotFoundError:
-    config = Config()
+# Load environment variables from .env file
+load_dotenv()
+
+def _get_env(key: str, default: str = "") -> str:
+    """Get environment variable with optional default"""
+    return os.getenv(key, default).strip()
 
 # Database Configuration
-DATABASE_URL = config(
-    "DATABASE_URL", cast=Secret, default="postgresql://user:pass@localhost/db"
-)
-TEST_DATABASE_URL = config("TEST_DATABASE_URL", default=None, cast=Secret)
+DATABASE_ENV = _get_env("DATABASE", "PROD")
+
+# Use PROD or TEST database based on DATABASE env variable
+if DATABASE_ENV == "PROD":
+    DATABASE_URL = _get_env(
+        "BACKEND_PROD_DATABASE_URL", "postgresql://user:pass@localhost/db"
+    )
+    TEST_DATABASE_URL = _get_env("BACKEND_TEST_DATABASE_URL", "")
+else:
+    DATABASE_URL = _get_env(
+        "BACKEND_TEST_DATABASE_URL", "postgresql://user:pass@localhost/db"
+    )
+    TEST_DATABASE_URL = _get_env("BACKEND_PROD_DATABASE_URL", "")
 
 # Authentication Configuration
-BETTER_AUTH_SECRET = config(
+BETTER_AUTH_SECRET = _get_env(
     "BETTER_AUTH_SECRET",
-    cast=str,
-    default="test-secret-key-for-development-only-minimum-32-characters",
+    "test-secret-key-for-development-only-minimum-32-characters",
 )
 
 # Stripe Configuration
-STRIPE_SECRET_KEY = config("SB_STRIPE_SECRET_KEY", cast=str, default="sk_test_default")
-STRIPE_PRICE_ID = config("SB_PRODUCT_PRICE_ID", cast=str, default="price_default")
-STRIPE_WEBHOOK_SECRET = config(
-    "STRIPE_WEBHOOK_SECRET", cast=str, default="whsec_default"
+STRIPE_SECRET_KEY = _get_env("STRIPE_SECRET_KEY", "sk_test_default")
+STRIPE_PRICE_ID = _get_env("STRIPE_PRODUCT_PRICE_ID", "price_default")
+STRIPE_WEBHOOK_SECRET = _get_env(
+    "STRIPE_WEBHOOK_SECRET", "whsec_default"
 )

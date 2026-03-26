@@ -103,8 +103,12 @@ def extract_user_email(payload: dict) -> str:
         >>> payload = verify_jwt_token(token)
         >>> email = extract_user_email(payload)
     """
-    # Better Auth stores email directly in payload
-    email = payload.get("email") or payload.get("user", {}).get("email")
+    # Better Auth can provide email in multiple payload shapes.
+    email = (
+        payload.get("email")
+        or payload.get("user", {}).get("email")
+        or payload.get("userEmail")
+    )
 
     if not email:
         # Log the payload structure for debugging
@@ -115,7 +119,7 @@ def extract_user_email(payload: dict) -> str:
             detail="Email not found in token payload",
         )
 
-    return email
+    return str(email).strip().lower()
 
 
 def extract_user_id(payload: dict) -> str:

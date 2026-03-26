@@ -3,6 +3,7 @@ import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlmodel import SQLModel
 
 from src.config.db import engine
@@ -14,7 +15,8 @@ from src.routes.webhook import router as webhook_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Creating Tables ... ")
-    SQLModel.metadata.create_all(engine)
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.create_all)
     yield
 
 

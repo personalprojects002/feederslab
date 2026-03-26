@@ -1,54 +1,55 @@
 import axios from "axios";
 import { authClient } from "./auth-client";
 
-type SessionData = {
-  token?: string;
-  sessionToken?: string;
-  session?: {
-    token?: string;
-    id?: string;
-    sessionToken?: string;
-  };
-};
+const rawBackendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL;
+const backendBaseUrl =
+  rawBackendUrl && rawBackendUrl.trim().length > 0
+    ? rawBackendUrl.trim()
+    : "http://localhost:8000";
 
 const backendApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://localhost:8000",
+  baseURL: backendBaseUrl,
   headers: {
     "Content-Type": "application/json",
   },
 });
+
 backendApi.interceptors.request.use(
   async (config) => {
     try {
       const session = await authClient.getSession();
+
       if (session?.data) {
-        console.log(
-          "📦 Full Session object:",
-          JSON.stringify(session.data, null, 2),
-        );
-        const sessionData = session.data as SessionData;
-        const token =
-          sessionData.session?.token ||
-          sessionData.token ||
-          sessionData.session?.id ||
-          sessionData.sessionToken ||
-          sessionData.session?.sessionToken;
+        let token: string | undefined;
+
+        // Better Auth JWT plugin returns token directly in session.data
+        if (
+          (session.data as any).token &&
+          typeof (session.data as any).token === "string"
+        ) {
+          token = (session.data as any).token;
+        }
+        // Fallback: check in session object
+        else if (
+          (session.data as any).session?.token &&
+          typeof (session.data as any).session.token === "string"
+        ) {
+          token = (session.data as any).session.token;
+        }
 
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
-          console.log("✅ Token attached:", token.substring(0, 20) + "...");
+          console.log("✅ JWT token attached to request");
         } else {
-          console.error("❌ No token found in session");
-          console.log("Session keys:", Object.keys(sessionData));
-          if (sessionData.session) {
-            console.log(
-              "Session.session keys:",
-              Object.keys(sessionData.session),
-            );
-          }
+          console.warn("⚠️ No JWT token found in session");
+          console.debug("Session structure:", {
+            hasData: !!session.data,
+            keys: Object.keys(session.data || {}),
+            fullData: session.data,
+          });
         }
       } else {
-        console.warn("⚠️ No session found - user not authenticated");
+        console.debug("ℹ️ No session found - user not authenticated");
       }
     } catch (error) {
       console.error("❌ Error getting auth token:", error);
@@ -60,12 +61,25 @@ backendApi.interceptors.request.use(
     return Promise.reject(error);
   },
 );
+
 backendApi.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      console.error("Unauthorized - token may be expired");
+      console.error("❌ Unauthorized - token may be expired or invalid");
     }
+
+    if (axios.isAxiosError(error) && !error.response) {
+      const details = {
+        baseURL: backendApi.defaults.baseURL,
+        url: error.config?.url,
+        method: error.config?.method,
+        code: error.code,
+        message: error.message,
+      };
+      console.error("❌ Network/CORS error reaching backend", details);
+    }
+
     return Promise.reject(error);
   },
 );

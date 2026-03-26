@@ -1,6 +1,7 @@
 "use client";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface ButtonGetStartedProps {
   className?: string;
@@ -12,21 +13,15 @@ export default function ButtonGetStarted({
   width,
 }: ButtonGetStartedProps) {
   const dashboardURL = "/dashboard";
-  const { data: session, isPending, error } = authClient.useSession();
-  if (isPending) {
-    return (
-      <Link
-        href="/sign-in"
-        className={`inline-flex items-center justify-center bg-[#0B0B0C] text-white px-5 py-3 text-sm font-semibold transition-colors hover:bg-[#1F2937] ${
-          width ?? ""
-        } ${className ?? "rounded-xl"}`}
-      >
-        Get Started
-      </Link>
-    );
-  }
-  if (error) {
-    console.error("Session error:", error);
+  const [mounted, setMounted] = useState(false);
+  const { data: session, isPending } = authClient.useSession();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Don't render until mounted to avoid hydration mismatch
+  if (!mounted || isPending) {
     return (
       <Link
         href="/sign-in"

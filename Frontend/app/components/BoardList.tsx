@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import backendApi from "@/lib/backend-api";
+import axios from "axios";
 
 interface Board {
   id: number;
@@ -28,12 +29,23 @@ export default function BoardList() {
     } catch (error: unknown) {
       console.error("Error fetching boards:", error);
 
+      // If backend is temporarily unavailable, keep dashboard usable and
+      // show an empty board list instead of a hard error block.
+      if (axios.isAxiosError(error) && !error.response) {
+        setBoards([]);
+        setError(null);
+        return;
+      }
+
       if (error && typeof error === "object" && "response" in error) {
         const axiosError = error as {
           response?: { status?: number; data?: { detail?: string } };
         };
         if (axiosError.response?.status === 401) {
           setError("Please sign in to view your boards");
+        } else if (axiosError.response?.status === 403) {
+          setBoards([]);
+          setError("Subscription required. Please subscribe to create boards.");
         } else if (axiosError.response?.data?.detail) {
           setError(axiosError.response.data.detail);
         } else {

@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "set TURBOPACK=0&& next dev",
+    "dev": "concurrently \"npm:next-dev\" \"npm:backend\"",
+    "next-dev": "set TURBOPACK=0&& next dev",
+    "backend": "cd ../Backend && ..\\.venv\\Scripts\\python.exe -m uvicorn main:app --reload --host 0.0.0.0 --port 8000",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -30,6 +32,7 @@
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.20",
     "baseline-browser-mapping": "^2.8.32",
+    "concurrently": "^8.2.2",
     "daisyui": "^5.5.5",
     "eslint": "^9",
     "eslint-config-next": "16.0.3",
