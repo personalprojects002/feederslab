@@ -19,7 +19,7 @@ from typing import Any, cast
 
 import jwt
 from fastapi import HTTPException, status
-from jwt.algorithms import OKPAlgorithm
+from jwt.algorithms import OKPAlgorithm, RSAAlgorithm
 
 from src.config.settings import BETTER_AUTH_SECRET
 
@@ -75,14 +75,35 @@ def _verify_with_jwks(token: str) -> dict[str, Any]:
 
     jwks = _get_jwks()
     keys = cast(list[dict[str, Any]], jwks.get("keys") or [])
+
+    if not keys:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token (JWKS verification failed): No keys available from JWKS endpoint",
+        )
+
     if kid:
-        keys = [k for k in keys if k.get("kid") == kid] or keys
+        matching_keys = [k for k in keys if k.get("kid") == kid]
+        if matching_keys:
+            keys = matching_keys
+        # If no matching kid found, try all keys as fallback
 
     last_error: str = "Invalid token"
     for jwk in keys:
         try:
-            # Better Auth's default keys are OKP (Ed25519 / Ed448).
-            public_key = OKPAlgorithm.from_jwk(jwk)
+            kty = jwk.get("kty")
+
+            # Handle OKP keys (EdDSA, Ed25519, Ed448)
+            if kty == "OKP":
+                public_key = OKPAlgorithm.from_jwk(jwk)
+            # Handle RSA keys
+            elif kty == "RSA":
+                public_key = RSAAlgorithm.from_jwk(jwk)
+            else:
+                # Skip unknown key types
+                last_error = f"Unsupported key type: {kty}"
+                continue
+
             algorithms = [alg] if isinstance(alg, str) and alg else None
             decoded = jwt.decode(
                 token,
@@ -128,21 +149,38 @@ def verify_jwt_token(token: str) -> dict[str, Any]:
         >>> user_email = payload.get("email")
     """
     try:
-        # Compatibility path: some setups may use HS256 with BETTER_AUTH_SECRET.
-        return jwt.decode(
-            token,
-            str(BETTER_AUTH_SECRET),
-            algorithms=["HS256"],
-            options={"verify_aud": False},
-        )
+        # First, try to get the token header to check algorithm
+        header = jwt.get_unverified_header(token)
+        alg = header.get("alg")
+
+        # If it's HS256, try with BETTER_AUTH_SECRET
+        if alg == "HS256":
+            try:
+                return jwt.decode(
+                    token,
+                    str(BETTER_AUTH_SECRET),
+                    algorithms=["HS256"],
+                    options={"verify_aud": False},
+                )
+            except jwt.exceptions.ExpiredSignatureError:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Token has expired",
+                )
+            except jwt.exceptions.InvalidTokenError:
+                # HS256 verification failed, fall through to JWKS
+                pass
+
+        # For non-HS256 or if HS256 failed, try JWKS verification
+        return _verify_with_jwks(token)
+
+    except HTTPException:
+        raise
     except jwt.exceptions.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token has expired",
         )
-    except jwt.exceptions.InvalidTokenError:
-        # Signature/malformed mismatch for HS256. Try verifying with JWKS.
-        return _verify_with_jwks(token)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
