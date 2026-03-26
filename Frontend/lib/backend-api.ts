@@ -17,39 +17,56 @@ const backendApi = axios.create({
 backendApi.interceptors.request.use(
   async (config) => {
     try {
-      const session = await authClient.getSession();
+      let token: string | undefined;
 
-      if (session?.data) {
-        let token: string | undefined;
+      // Try to get token from jwtClient plugin
+      type TokenPluginResponse = { data?: { token?: unknown } } | null | undefined;
+      const authClientWithToken = authClient as unknown as {
+        token?: () => Promise<TokenPluginResponse>;
+      };
 
-        // Better Auth JWT plugin returns token directly in session.data
-        if (
-          (session.data as any).token &&
-          typeof (session.data as any).token === "string"
-        ) {
-          token = (session.data as any).token;
+      if (typeof authClientWithToken.token === "function") {
+        try {
+          const tokenResp = await authClientWithToken.token();
+          const candidate = tokenResp?.data?.token;
+          if (typeof candidate === "string") {
+            token = candidate;
+          }
+        } catch (e) {
+          // Token endpoint failed, try fallback
         }
-        // Fallback: check in session object
-        else if (
-          (session.data as any).session?.token &&
-          typeof (session.data as any).session.token === "string"
-        ) {
-          token = (session.data as any).session.token;
-        }
+      }
 
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-          console.log("✅ JWT token attached to request");
-        } else {
-          console.warn("⚠️ No JWT token found in session");
-          console.debug("Session structure:", {
-            hasData: !!session.data,
-            keys: Object.keys(session.data || {}),
-            fullData: session.data,
-          });
+      // Fallback: get session and extract token
+      if (!token) {
+        try {
+          const session = await authClient.getSession();
+          if (session?.data) {
+            const sessionData = session.data as unknown;
+            if (typeof sessionData === "object" && sessionData !== null) {
+              const dataShape = sessionData as {
+                token?: unknown;
+                session?: { token?: unknown };
+                user?: { id?: string };
+              };
+              if (typeof dataShape.token === "string") {
+                token = dataShape.token;
+              } else if (typeof dataShape.session?.token === "string") {
+                token = dataShape.session.token;
+              }
+            }
+          }
+        } catch (e) {
+          // Session retrieval failed
         }
+      }
+
+      if (token) {
+        config.headers = config.headers ?? {};
+        const headers = config.headers as Record<string, unknown>;
+        headers.Authorization = `Bearer ${token}`;
       } else {
-        console.debug("ℹ️ No session found - user not authenticated");
+        console.debug("⚠️ No auth token available for request");
       }
     } catch (error) {
       console.error("❌ Error getting auth token:", error);
@@ -66,7 +83,10 @@ backendApi.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      console.error("❌ Unauthorized - token may be expired or invalid");
+      console.error(
+        "❌ Unauthorized - token invalid/expired",
+        error.response?.data?.detail || error.message,
+      );
     }
 
     if (axios.isAxiosError(error) && !error.response) {
