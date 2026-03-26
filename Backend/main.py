@@ -32,10 +32,15 @@ env_origins = os.getenv("CORS_ORIGINS", "").strip()
 frontend_origin = os.getenv("FRONTEND_ORIGIN", "").strip()
 
 allowed_origins = default_origins.copy()
+# If CORS_ORIGINS is provided, it becomes the source of truth.
 if env_origins:
     allowed_origins = [origin.strip() for origin in env_origins.split(",") if origin.strip()]
-elif frontend_origin:
-    allowed_origins = [frontend_origin]
+else:
+    # Otherwise, add FRONTEND_ORIGIN without removing the defaults.
+    # This prevents accidentally allowing only one local port (e.g. :3001)
+    # and blocking the other (e.g. :3000).
+    if frontend_origin and frontend_origin not in allowed_origins:
+        allowed_origins.append(frontend_origin)
 
 app.add_middleware(
     CORSMiddleware,
