@@ -156,21 +156,21 @@ async def get_subscription_status(
     try:
         from src.models.user import User
 
-        result = await session.exec(select(User).where(User.email == user_email))
-        user = result.first()
-        
+        result = await session.execute(select(User).where(User.email == user_email))
+        user = result.scalars().first()
+
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found"
             )
-        
+
         return {
             "has_access": user.has_access,
             "customer_id": user.customer_id,
             "stripe_current_period_end": user.stripe_current_period_end.isoformat() if user.stripe_current_period_end else None
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:

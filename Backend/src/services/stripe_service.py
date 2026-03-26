@@ -52,8 +52,8 @@ class StripeService:
             User object or None if not found
         """
         statement = select(User).where(User.email == email)
-        result = await self.session.exec(statement)
-        user = result.first()
+        result = await self.session.execute(statement)
+        user = result.scalars().first()
         return user
 
     async def get_user_by_id(self, user_id: str) -> Optional[User]:
@@ -67,8 +67,8 @@ class StripeService:
             User object or None if not found
         """
         statement = select(User).where(User.id == user_id)
-        result = await self.session.exec(statement)
-        user = result.first()
+        result = await self.session.execute(statement)
+        user = result.scalars().first()
         return user
 
     async def create_checkout_session(
@@ -246,8 +246,8 @@ class StripeService:
             return
 
         statement = select(User).where(User.customer_id == customer_id)
-        result = await self.session.exec(statement)
-        user = result.first()
+        result = await self.session.execute(statement)
+        user = result.scalars().first()
 
         if user:
             # Revoke access - EXACT same logic as TypeScript

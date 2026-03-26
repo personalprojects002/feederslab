@@ -24,8 +24,8 @@ class BoardService:
         4. Create board
         5. Return board
         """
-        result = await self.session.exec(select(User).where(User.email == user_email))
-        user = result.first()
+        result = await self.session.execute(select(User).where(User.email == user_email))
+        user = result.scalars().first()
 
         if not user:
             raise ValueError("You are not allowed to create a board")
@@ -49,23 +49,23 @@ class BoardService:
         return new_board
 
     async def get_all_boards(self, user_email: str) -> list[Board]:
-        result = await self.session.exec(select(User).where(User.email == user_email))
-        user = result.first()
+        result = await self.session.execute(select(User).where(User.email == user_email))
+        user = result.scalars().first()
 
         if not user:
             raise ValueError("User not found")
 
         # Query boards directly instead of using relationship
-        boards_result = await self.session.exec(
+        boards_result = await self.session.execute(
             select(Board).where(Board.user_id == user.id)
         )
-        boards = boards_result.all()
+        boards = boards_result.scalars().all()
 
         return list(boards)
 
     async def get_board_by_id(self, board_id: int, user_email: str) -> Board | None:
-        result = await self.session.exec(select(Board).where(Board.id == board_id))
-        board = result.first()
+        result = await self.session.execute(select(Board).where(Board.id == board_id))
+        board = result.scalars().first()
 
         if not board:
             return None
@@ -82,8 +82,8 @@ class BoardService:
     async def update_board(
         self, board_id: int, board_name: str, user_email: str
     ) -> Board | None:
-        result = await self.session.exec(select(Board).where(Board.id == board_id))
-        board = result.first()
+        result = await self.session.execute(select(Board).where(Board.id == board_id))
+        board = result.scalars().first()
 
         if not board:
             return None
@@ -105,8 +105,8 @@ class BoardService:
         return board
 
     async def delete_board(self, board_id: int, user_email: str) -> bool:
-        result = await self.session.exec(select(Board).where(Board.id == board_id))
-        board = result.first()
+        result = await self.session.execute(select(Board).where(Board.id == board_id))
+        board = result.scalars().first()
 
         if not board:
             return False
