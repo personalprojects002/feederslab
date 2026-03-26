@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { auth } from "@/lib/better-auth";
 import { headers } from "next/headers";
+import DashboardWrapper from "./DashboardWrapper";
 
 export default async function LayoutDashboard({
   children,
@@ -13,5 +14,5 @@ export default async function LayoutDashboard({
   });
   if (!session?.user) redirect("/sign-in");
 
-  return children;
+  return <DashboardWrapper>{children}</DashboardWrapper>;
 }

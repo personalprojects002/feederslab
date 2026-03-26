@@ -47,6 +47,10 @@ export const auth = betterAuth({
   secret: authSecret,
   trustHost: true,
   baseURL: getBaseURL(),
+  session: {
+    expiresIn: 120, // 2 minutes for demo (will change to 900 seconds = 15 minutes later)
+    slidingExpiration: false, // Session does NOT extend on activity - will expire after 2 minutes
+  },
 
   socialProviders: {
     google: {
@@ -56,7 +60,9 @@ export const auth = betterAuth({
   },
 
   plugins: [
-    jwt(),
+    jwt({
+      expiresIn: "2m", // 2 minutes for demo (will change to 15 minutes later)
+    }),
     magicLink({
       sendMagicLink: async ({ email, url }) => {
         const { host } = new URL(url);

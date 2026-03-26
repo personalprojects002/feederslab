@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlmodel import SQLModel
 
 from src.config.db import engine
+from src.routes.auth import router as auth_router
 from src.routes.billing import router as billing_router
 from src.routes.boards import router as boards_router
 from src.routes.webhook import router as webhook_router
@@ -51,4 +52,5 @@ app.add_middleware(
 )
 app.include_router(boards_router)
 app.include_router(billing_router)
+app.include_router(auth_router)
 app.include_router(webhook_router)
