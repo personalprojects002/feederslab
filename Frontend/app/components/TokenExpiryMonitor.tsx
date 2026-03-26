@@ -5,68 +5,22 @@ import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
 
 /**
- * Component that monitors JWT token expiration and handles automatic refresh or redirect to sign-in when expired
+ * Component that monitors JWT token expiration and redirects to sign-in when expired
+ * For the 2-minute demo: Forces redirect after token expires
  */
 export default function TokenExpiryMonitor() {
   const router = useRouter();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [checkedOnce, setCheckedOnce] = useState(false);
 
-  const refreshAccessToken = async (): Promise<boolean> => {
-    try {
-      setIsRefreshing(true);
-
-      // Get the refresh token from cookie or localStorage
-      const refreshToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('refresh_token='))
-        ?.split('=')[1];
-
-      if (!refreshToken) {
-        console.log('No refresh token found, redirecting to sign in...');
-        return false;
-      }
-
-      // Call the backend refresh endpoint
-      const response = await fetch('http://localhost:8000/auth/refresh', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ refreshToken }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const newAccessToken = data.accessToken;
-
-        // In a real app, you'd update the auth client with the new token
-        // For now, we'll just log that the refresh was successful
-        console.log('Token refreshed successfully');
-
-        // Reset the expiration timer with the new token
-        scheduleRedirect();
-        return true;
-      } else {
-        console.log('Token refresh failed, redirecting to sign in...');
-        return false;
-      }
-    } catch (error) {
-      console.error('Error refreshing token:', error);
-      return false;
-    } finally {
-      setIsRefreshing(false);
+  const checkAndScheduleRedirect = () => {
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
     }
-  };
 
-  const scheduleRedirect = async () => {
-    try {
-      // Clear any existing timeout
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-
-      // Get the JWT token to check its expiration
+    // Get the JWT token to check its expiration
+    const checkToken = async () => {
       let token: string | undefined;
 
       type TokenPluginResponse = { data?: { token?: unknown } } | null | undefined;
@@ -75,21 +29,33 @@ export default function TokenExpiryMonitor() {
       };
 
       if (typeof authClientWithToken.token === 'function') {
-        const tokenResp = await authClientWithToken.token();
-        const candidate = tokenResp?.data?.token;
-        if (typeof candidate === 'string') token = candidate;
+        try {
+          const tokenResp = await authClientWithToken.token();
+          const candidate = tokenResp?.data?.token;
+          if (typeof candidate === 'string') token = candidate;
+        } catch (error) {
+          console.error('Error getting token:', error);
+        }
       }
 
       if (!token) {
         // If no token, try to get session to see if user is logged in
-        const session = await authClient.getSession();
-        if (!session) {
-          // User not logged in, no need to monitor
-          return;
+        try {
+          const session = await authClient.getSession();
+          if (!session) {
+            // User not logged in, redirect to sign in
+            console.log('No active session, redirecting to sign in...');
+            router.push('/auth/signin');
+            router.refresh();
+            return;
+          }
+        } catch (error) {
+          console.error('Error getting session:', error);
         }
+        return;
       }
 
-      if (token) {
+      try {
         // Decode the JWT token to get expiration time
         const payload = JSON.parse(atob(token.split('.')[1]));
         const exp = payload.exp; // Expiration time in seconds
@@ -98,54 +64,45 @@ export default function TokenExpiryMonitor() {
         if (exp) {
           const timeUntilExpiry = (exp - now) * 1000; // Convert to milliseconds
 
-          // Refresh the token 30 seconds before it expires
-          const refreshTime = Math.max(0, timeUntilExpiry - 30000); // 30 seconds before expiry
+          console.log(`Token expires in ${timeUntilExpiry / 1000} seconds`);
 
           if (timeUntilExpiry <= 0) {
             // Token already expired, redirect immediately
-            console.log('Token already expired, redirecting to sign in...');
+            console.log('Token expired, redirecting to sign in...');
             router.push('/auth/signin');
             router.refresh();
-          } else if (refreshTime === 0) {
-            // Token expires in less than 30 seconds, try to refresh now
-            const refreshed = await refreshAccessToken();
-            if (!refreshed) {
+          } else {
+            // Schedule redirect for when token expires
+            console.log(`Scheduling redirect in ${timeUntilExpiry / 1000} seconds...`);
+
+            timeoutRef.current = setTimeout(() => {
+              console.log('Token expired (via timeout), redirecting to sign in...');
               router.push('/auth/signin');
               router.refresh();
-            }
-          } else {
-            // Schedule refresh for 30 seconds before expiry
-            console.log(`Token expires in ${timeUntilExpiry / 1000} seconds, scheduling refresh in ${refreshTime / 1000} seconds...`);
-
-            timeoutRef.current = setTimeout(async () => {
-              const refreshed = await refreshAccessToken();
-              if (!refreshed) {
-                console.log('Refresh failed, redirecting to sign in...');
-                router.push('/auth/signin');
-                router.refresh();
-              }
-            }, refreshTime);
+            }, timeUntilExpiry);
           }
         }
+      } catch (error) {
+        console.error('Error decoding token:', error);
+        // If we can't decode the token, assume it's invalid and redirect
+        router.push('/auth/signin');
+        router.refresh();
       }
-    } catch (error) {
-      console.error('Error monitoring token expiration:', error);
-    }
+    };
+
+    checkToken();
   };
 
   useEffect(() => {
     // Check token expiration immediately
-    scheduleRedirect();
+    checkAndScheduleRedirect();
+    setCheckedOnce(true);
 
-    // Also check periodically in case the token changes
-    const interval = setInterval(scheduleRedirect, 30000); // Check every 30 seconds
-
+    // Clean up on unmount
     return () => {
-      // Clean up timeout and interval
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      clearInterval(interval);
     };
   }, [router]);
 
