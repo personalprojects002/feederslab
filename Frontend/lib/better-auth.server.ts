@@ -90,7 +90,7 @@ export const auth = betterAuth({
           body: JSON.stringify({
             from,
             to: [email],
-            subject: `Sign in to FeedersLab securely`,
+            subject: `Your FeedersLab sign-in link`,
             html: html({ url, host }),
             text: text({ url, host }),
           }),
@@ -114,9 +114,7 @@ function html({ url, host }: { url: string; host: string }) {
   const escapedHost = host.replace(/\./g, "&#8203;.");
   const escapedUrl = url.replace(/&/g, "&amp;").replace(/</g, "&lt;");
   const year = new Date().getFullYear();
-  const bodyFont = "'Inter','Segoe UI',Arial,Helvetica,sans-serif";
-  const headingFont =
-    "'Plus Jakarta Sans','Inter','Segoe UI',Arial,Helvetica,sans-serif";
+  const font = "'Inter','Segoe UI',Arial,Helvetica,sans-serif";
 
   return `
 <!DOCTYPE html>
@@ -124,53 +122,41 @@ function html({ url, host }: { url: string; host: string }) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FeedersLab secure sign in</title>
+  <title>Your FeedersLab sign-in link</title>
 </head>
-<body style="margin:0; padding:0; background:#050505; font-family:${bodyFont}; color:#f5f5f5;">
+<body style="margin:0; padding:0; background:#f4f6f8; font-family:${font}; color:#111827;">
   <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent; mso-hide:all;">
-    Your secure FeedersLab sign-in link is ready.
+    Use this link to sign in to FeedersLab.
   </div>
 
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#050505;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f6f8;">
     <tr>
-      <td align="center" style="padding:34px 14px;">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:640px; border:1px solid #1f1f1f; border-radius:22px; overflow:hidden; background:#0a0a0a;">
+      <td align="center" style="padding:24px 12px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px; border:1px solid #e5e7eb; border-radius:14px; overflow:hidden; background:#ffffff;">
           <tr>
-            <td style="padding:28px 30px 18px; border-bottom:1px solid #1d1d1d; background:linear-gradient(145deg,#131313 0%,#090909 100%);">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <td align="left" style="font-size:12px; line-height:1; letter-spacing:0.16em; text-transform:uppercase; color:#8b8b8b; font-weight:600; font-family:${headingFont};">
-                    FeedersLab
-                  </td>
-                  <td align="right" style="font-size:12px; line-height:1; letter-spacing:0.12em; text-transform:uppercase; color:#8b8b8b; font-family:${headingFont};">
-                    Secure access
-                  </td>
-                </tr>
-              </table>
+            <td style="padding:22px 24px; border-bottom:1px solid #e5e7eb; font-size:13px; color:#6b7280;">
+              FeedersLab
             </td>
           </tr>
 
           <tr>
-            <td style="padding:34px 30px 18px;">
-              <p style="margin:0 0 10px; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:#9f9f9f; font-weight:600; font-family:${headingFont};">
-                One-time sign-in link
-              </p>
-              <h1 style="margin:0; font-size:32px; line-height:1.22; color:#ffffff; font-weight:700; letter-spacing:-0.02em; font-family:${headingFont};">
-                Sign in to your workspace
+            <td style="padding:24px;">
+              <h1 style="margin:0 0 12px; font-size:22px; line-height:1.35; color:#111827; font-weight:700;">
+                Sign in to FeedersLab
               </h1>
-              <p style="margin:14px 0 0; font-size:15px; line-height:1.7; color:#b7b7b7;">
-                Use this private link to sign in to <span style="color:#ffffff; font-weight:600;">${escapedHost}</span>. For your security, only use this email if you requested access.
+              <p style="margin:0; font-size:15px; line-height:1.65; color:#374151;">
+                Click the button below to sign in to <strong>${escapedHost}</strong>. This is a one-time sign-in link created for your email address.
               </p>
             </td>
           </tr>
 
           <tr>
-            <td style="padding:10px 30px 0;">
+            <td style="padding:0 24px 8px;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td align="center" style="border-radius:12px; background:#ffffff;">
-                    <a href="${escapedUrl}" style="display:inline-block; padding:14px 26px; font-size:14px; line-height:1; font-weight:700; letter-spacing:0.02em; text-decoration:none; color:#070707;">
-                      Sign in securely
+                  <td align="center" style="border-radius:10px; background:#111827;">
+                    <a href="${escapedUrl}" style="display:inline-block; padding:12px 20px; font-size:14px; line-height:1; font-weight:600; text-decoration:none; color:#ffffff;">
+                      Sign in to FeedersLab
                     </a>
                   </td>
                 </tr>
@@ -179,23 +165,23 @@ function html({ url, host }: { url: string; host: string }) {
           </tr>
 
           <tr>
-            <td style="padding:24px 30px 34px;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #1f1f1f; border-radius:14px; background:#0f0f0f;">
+            <td style="padding:16px 24px 24px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e5e7eb; border-radius:10px; background:#f9fafb;">
                 <tr>
-                  <td style="padding:14px 16px; font-size:12px; line-height:1.7; color:#9b9b9b; word-break:break-all;">
-                    If the button does not work, copy this URL:<br>
-                    <span style="color:#f2f2f2;">${escapedUrl}</span>
+                  <td style="padding:12px 14px; font-size:12px; line-height:1.7; color:#4b5563; word-break:break-all;">
+                    If the button does not work, copy and paste this link into your browser:<br>
+                    <span style="color:#111827;">${escapedUrl}</span>
                   </td>
                 </tr>
               </table>
-              <p style="margin:16px 0 0; font-size:12px; line-height:1.7; color:#8a8a8a;">
-                If you did not request this, you can ignore this email.
+              <p style="margin:14px 0 0; font-size:12px; line-height:1.7; color:#6b7280;">
+                If you did not request this email, you can safely ignore it.
               </p>
             </td>
           </tr>
         </table>
 
-        <p style="margin:14px 0 0; font-size:12px; line-height:1.6; color:#7f7f7f;">
+        <p style="margin:12px 0 0; font-size:12px; line-height:1.6; color:#6b7280;">
           © ${year} FeedersLab
         </p>
       </td>
@@ -207,5 +193,11 @@ function html({ url, host }: { url: string; host: string }) {
 }
 
 function text({ url, host }: { url: string; host: string }) {
-  return `FeedersLab secure sign-in link\n\nUse this one-time sign-in link for ${host}:\n${url}\n\nIf you did not request this, you can ignore this email.\n`;
+  return `FeedersLab sign-in link
+
+Sign in to ${host} using this one-time link:
+${url}
+
+If you did not request this email, you can safely ignore it.
+`;
 }

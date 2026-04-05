@@ -135,7 +135,3 @@ cd Backend
   verify `RESEND_KEY`, `RESEND_FROM`, and sender domain setup.
 - Stripe webhook noise locally:
   the listener is configured to forward only required event types.
-
-## License
-
-This project is licensed under the MIT License. See [LICENSE](LICENSE).
