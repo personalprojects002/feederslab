@@ -32,6 +32,7 @@ let backendAccessToken: string | null = null;
 let backendAccessTokenExpiresAtMs: number | null = null;
 let refreshInFlight: Promise<string | null> | null = null;
 let bootstrapInFlight: Promise<boolean> | null = null;
+let lastForcedSignInRedirectAtMs = 0;
 
 const authTransport = axios.create({
   baseURL: backendBaseUrl,
@@ -238,6 +239,43 @@ function isProtectedRouteForAuthRecovery(url: string): boolean {
   return !isSharedRoute(url) && !isAuthRoute(url);
 }
 
+async function hasBetterAuthSession(): Promise<boolean> {
+  try {
+    const session = await authClient.getSession();
+    return Boolean(session?.data);
+  } catch {
+    return false;
+  }
+}
+
+async function redirectToSignInIfSessionMissing(reason: string): Promise<void> {
+  if (
+    typeof window === "undefined" ||
+    window.location.pathname === "/sign-in"
+  ) {
+    return;
+  }
+
+  const now = Date.now();
+  if (now - lastForcedSignInRedirectAtMs < 5000) {
+    return;
+  }
+
+  const sessionExists = await hasBetterAuthSession();
+  if (sessionExists) {
+    // When Better Auth session is still valid, backend token sync may just be
+    // transiently unavailable. Avoid kicking users out repeatedly.
+    console.warn(
+      "Skipped sign-in redirect because Better Auth session exists:",
+      reason,
+    );
+    return;
+  }
+
+  lastForcedSignInRedirectAtMs = now;
+  window.location.href = "/sign-in";
+}
+
 const backendApi = axios.create({
   baseURL: backendBaseUrl,
   headers: {
@@ -321,12 +359,7 @@ backendApi.interceptors.response.use(
         }
 
         clearBackendAccessToken();
-        if (
-          typeof window !== "undefined" &&
-          window.location.pathname !== "/sign-in"
-        ) {
-          window.location.href = "/sign-in";
-        }
+        await redirectToSignInIfSessionMissing("backend 401 after retry");
       }
 
       // If we already retried and still received 401 on a protected route,
@@ -334,11 +367,12 @@ backendApi.interceptors.response.use(
       if (
         !canRetry &&
         isProtectedRouteForAuthRecovery(requestUrl) &&
-        typeof window !== "undefined" &&
-        window.location.pathname !== "/sign-in"
+        typeof window !== "undefined"
       ) {
         clearBackendAccessToken();
-        window.location.href = "/sign-in";
+        await redirectToSignInIfSessionMissing(
+          "backend 401 after exhausted recovery",
+        );
       }
 
       const detail = `${error.response?.data?.detail || error.message}`;

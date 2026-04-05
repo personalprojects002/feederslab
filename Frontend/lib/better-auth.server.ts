@@ -15,6 +15,7 @@ const serverBaseUrlRaw = process.env.BETTER_AUTH_URL?.toString()?.trim();
 const publicBaseUrlRaw =
   process.env.NEXT_PUBLIC_BETTER_AUTH_URL?.toString()?.trim();
 const vercelUrlRaw = process.env.VERCEL_URL?.toString()?.trim();
+const vercelEnvRaw = process.env.VERCEL_ENV?.toString()?.trim().toLowerCase();
 const vercelProductionUrlRaw =
   process.env.VERCEL_PROJECT_PRODUCTION_URL?.toString()?.trim();
 const manualTrustedOriginsRaw =
@@ -58,9 +59,17 @@ const getBaseURL = () => {
   if (serverBaseUrlRaw) {
     return serverBaseUrlRaw;
   }
+
+  // Preview deployments should prefer their own host so auth callbacks/cookies
+  // remain bound to the domain the user is actually visiting.
+  if (vercelUrlRaw && vercelEnvRaw && vercelEnvRaw !== "production") {
+    return `https://${vercelUrlRaw}`;
+  }
+
   if (publicBaseUrlRaw) {
     return publicBaseUrlRaw;
   }
+
   if (vercelUrlRaw) {
     // Vercel provides this per-deployment host; using it avoids localhost
     // fallback in cloud environments where explicit base URLs were not set.
