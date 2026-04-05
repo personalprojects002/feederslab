@@ -5,6 +5,12 @@ from sqlmodel import Field, SQLModel
 
 
 class RefreshToken(SQLModel, table=True):
+    """Long-lived token record used to mint short-lived access tokens.
+
+    Refresh rows are persisted server-side so sessions can be revoked
+    centrally without trusting client-side storage state.
+    """
+
     __tablename__ = "refresh_tokens"
 
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -16,6 +22,7 @@ class RefreshToken(SQLModel, table=True):
 
     @property
     def is_expired(self) -> bool:
+        # Computed status keeps expiry checks consistent wherever tokens are used.
         return datetime.utcnow() > self.expires_at
 
     @property
@@ -24,4 +31,5 @@ class RefreshToken(SQLModel, table=True):
 
     @property
     def is_active(self) -> bool:
+        # Single source of truth for token usability avoids duplicated predicates.
         return not self.is_expired and not self.is_revoked

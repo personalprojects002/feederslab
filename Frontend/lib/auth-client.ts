@@ -14,6 +14,14 @@ export const authClient = createAuthClient({
   plugins: [magicLinkClient(), jwtClient()],
   fetchOptions: {
     onError(e) {
+      const requestUrl =
+        typeof e.request?.url === "string"
+          ? e.request.url
+          : e.request?.url?.toString() || "";
+      const isSessionProbe = requestUrl.includes(
+        "/api/better-auth/get-session",
+      );
+
       // Only log actual errors, not expected failures
       if (e.error?.status === 429) {
         console.warn("Rate limited - please try again later");
@@ -24,8 +32,10 @@ export const authClient = createAuthClient({
         // 403 is expected for permission denied - don't log as error
         console.debug("Permission denied");
       } else if (e.error?.status && e.error.status >= 500) {
-        // Only log server errors
-        console.error("Server error:", e.error.status, e.error.message);
+        // During session probes, temporary auth/db outages are handled upstream.
+        if (!isSessionProbe) {
+          console.error("Server error:", e.error.status, e.error.message);
+        }
       }
       // Silently ignore other errors (network timeouts, etc.)
     },

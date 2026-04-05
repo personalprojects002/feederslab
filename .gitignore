@@ -1,6 +1,21 @@
 # Environment files
 .env
+.env.*
 **/.env
+**/.env.*
+!.env.example
+!**/.env.example
+
+# Local deployment exports (never commit real keys)
+*-production-env.txt
+*docker-runtime.env
+
+# Secret-like files
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
 
 # Python virtual environments
 venv/
@@ -12,14 +27,28 @@ venv/
 __pycache__/
 **/__pycache__/
 *.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage*
 
 # Node dependencies
 node_modules/
 **/node_modules/
 
+# Build/runtime artifacts
+dist/
+build/
+*.log
+*.tar
+*.tar.gz
+*.zip
+
 # OS/editor files
 .DS_Store
 Thumbs.db
+.idea/
+.vscode/
 
 # Temporary git metadata backups
 git_backup_*/

@@ -19,6 +19,8 @@ export default function SignInPage() {
         </p>
 
         <div className="mt-6 grid gap-4">
+          {/* Social-first path reduces friction for most users while the email
+              option below keeps authentication accessible without Google. */}
           <GoogleAuth />
 
           <div className="flex items-center gap-3">
@@ -30,6 +32,7 @@ export default function SignInPage() {
           <MagicLinkAuth />
         </div>
 
+        {/* Trust cue reinforces security posture near the final decision point. */}
         <p className="mt-6 text-xs text-gray-500">
           Your session is protected. We never expose sensitive keys in the
           browser.

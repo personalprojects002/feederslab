@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Providers from "./providers";
+import Providers from "@/app/providers";
 
 export const metadata: Metadata = {
   // Site-wide title and description
@@ -27,6 +27,11 @@ export const metadata: Metadata = {
     description:
       "Collect customer feedback, prioritize features, and build better products.",
   },
+  icons: {
+    icon: "/icon-circle.svg",
+    shortcut: "/icon-circle.svg",
+    apple: "/icon-circle.svg",
+  },
   manifest: "/manifest.json",
 };
 
@@ -36,7 +41,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" data-theme="light" className="scroll-smooth">
+    <html
+      lang="en"
+      data-theme="light"
+      data-scroll-behavior="smooth"
+      className="scroll-smooth"
+    >
       <body>
         <Providers>{children}</Providers>
       </body>

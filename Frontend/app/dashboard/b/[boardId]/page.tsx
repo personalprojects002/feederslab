@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import backendApi from "@/lib/backend-api";
+import FeatureBoardClient from "@/app/components/FeatureBoardClient";
+import { getOwnerBoard } from "@/lib/feedback-api";
 
 type Props = {
   params: Promise<{ boardId: string }>;
@@ -12,7 +13,7 @@ type Props = {
 interface Board {
   id: number;
   board_name: string;
-  user_id: number;
+  user_id: string;
   created_at: string;
   updated_at: string;
 }
@@ -25,6 +26,8 @@ export default function FeedbackBoard({ params }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Params arrive as a promise in this setup; resolving once into state keeps
+    // downstream effects independent from framework-specific param mechanics.
     params.then((resolvedParams) => {
       setBoardId(resolvedParams.boardId);
     });
@@ -38,15 +41,15 @@ export default function FeedbackBoard({ params }: Props) {
         setLoading(true);
         setError(null);
 
-        // Validate boardId is a number
+        // Early client-side validation avoids unnecessary network traffic for
+        // malformed URLs and quickly returns users to a safe route.
         if (isNaN(Number(boardId))) {
           router.push("/dashboard");
           return;
         }
 
-        // Fetch board from FastAPI backend
-        const response = await backendApi.get(`/boards/${boardId}`);
-        setBoard(response.data);
+        const data = await getOwnerBoard(Number(boardId));
+        setBoard(data);
       } catch (error: unknown) {
         console.error("Error fetching board:", error);
 
@@ -56,14 +59,14 @@ export default function FeedbackBoard({ params }: Props) {
           };
 
           if (axiosError.response?.status === 401) {
-            // Not authenticated
+            // Authentication failures are redirected instead of rendered inline
+            // so protected routes cannot linger in a partially broken state.
             router.push("/sign-in");
           } else if (axiosError.response?.status === 403) {
-            // Not authorized to view this board
+            // Short delay gives users context before navigation resets them.
             setError("You don't have permission to view this board");
             setTimeout(() => router.push("/dashboard"), 2000);
           } else if (axiosError.response?.status === 404) {
-            // Board not found
             setError("Board not found");
             setTimeout(() => router.push("/dashboard"), 2000);
           } else {
@@ -85,9 +88,9 @@ export default function FeedbackBoard({ params }: Props) {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F5F5F7]">
+      <div className="min-h-screen bg-black">
         <div className="mx-auto w-full max-w-5xl px-6 py-8 md:px-10">
-          <div className="rounded-2xl border border-[#E5E7EB] bg-white p-10">
+          <div className="rounded-2xl border border-white/15 bg-[#101010] p-10">
             <div className="flex justify-center py-12">
               <span className="loading loading-spinner loading-lg"></span>
             </div>
@@ -100,12 +103,12 @@ export default function FeedbackBoard({ params }: Props) {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-[#F5F5F7]">
+      <div className="min-h-screen bg-black">
         <div className="mx-auto w-full max-w-5xl px-6 py-8 md:px-10">
           <div className="mb-5">
             <Link
               href="/dashboard"
-              className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm font-medium text-[#0B0B0C] hover:bg-[#F9FAFB]"
+              className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/15 bg-[#0B0B0B] px-4 text-sm font-medium text-white hover:bg-[#171717]"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -133,48 +136,38 @@ export default function FeedbackBoard({ params }: Props) {
     );
   }
 
-  // Board content
   return (
-    <div className="min-h-screen bg-[#F5F5F7]">
-      <div className="mx-auto w-full max-w-5xl px-6 py-8 md:px-10">
-        <div className="mb-5">
-          <Link
-            href="/dashboard"
-            className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm font-medium text-[#0B0B0C] hover:bg-[#F9FAFB]"
+    <div className="mx-auto w-full max-w-5xl">
+      <div className="mb-4">
+        <Link
+          href="/dashboard"
+          className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/15 bg-[#0B0B0B] px-4 text-sm font-medium text-white hover:bg-[#171717]"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="h-4 w-4"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="h-4 w-4"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
-              />
-            </svg>
-            Back to dashboard
-          </Link>
-        </div>
-
-        <div className="rounded-2xl border border-[#E5E7EB] bg-white p-7 md:p-8">
-          <h1 className="text-2xl font-semibold tracking-tight text-[#0B0B0C] md:text-3xl">
-            {board?.board_name}
-          </h1>
-          <p className="mt-2 text-sm text-gray-500">
-            Created on {new Date(board?.created_at || "").toLocaleDateString()}
-          </p>
-
-          <div className="mt-6 rounded-xl border border-dashed border-[#D1D5DB] bg-white p-8 text-center">
-            <p className="text-sm text-gray-600">
-              Board content will appear here.
-            </p>
-          </div>
-        </div>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
+            />
+          </svg>
+          Back to dashboard
+        </Link>
       </div>
+
+      {board ? (
+        <FeatureBoardClient
+          mode="owner"
+          boardId={board.id}
+          boardName={board.board_name}
+        />
+      ) : null}
     </div>
   );
 }

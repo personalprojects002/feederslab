@@ -31,25 +31,33 @@ This folder contains the client application for FeedersLab.
 
 ## Environment variables
 
-Create `Frontend/.env.local`:
+Copy `Frontend/.env.example` to `Frontend/.env.local`, then fill values.
+
+Required keys:
 
 ```env
 NEXT_PUBLIC_BACKEND_API_URL=http://localhost:8000
 NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
+NEXT_PUBLIC_ACCESS_TOKEN_REFRESH_THRESHOLD_SECONDS=120
 
 BETTER_AUTH_SECRET=your_minimum_32_character_secret_here
+BETTER_AUTH_SESSION_EXPIRY_SECONDS=1209600
 
 GOOGLE_ID=your_google_oauth_client_id
 GOOGLE_SECRET=your_google_oauth_client_secret
 
 RESEND_KEY=re_your_resend_api_key
 RESEND_FROM=noreply@yourdomain.com
+
+# Needed only when Frontend/lib/postgres.ts is used at runtime
+DATABASE_URL=postgresql://username:password@host:5432/db_name?sslmode=require
 ```
 
 Meaning:
 
 - `NEXT_PUBLIC_BACKEND_API_URL`: backend base URL
 - `NEXT_PUBLIC_BETTER_AUTH_URL`: frontend app URL
+- `NEXT_PUBLIC_ACCESS_TOKEN_REFRESH_THRESHOLD_SECONDS`: proactive refresh threshold
 - `BETTER_AUTH_SECRET`: auth signing secret
 - `GOOGLE_ID` / `GOOGLE_SECRET`: Google OAuth credentials
 - `RESEND_KEY` / `RESEND_FROM`: email delivery credentials
@@ -67,6 +75,12 @@ Run development server:
 
 ```powershell
 npm run dev
+```
+
+Run full stack from Frontend scripts (optional):
+
+```powershell
+npm run dev:full
 ```
 
 Run lint:
@@ -91,6 +105,13 @@ npm start
 - Backend must run on `http://localhost:8000`
 - Stripe checkout relies on backend billing endpoints
 - Magic-link email requires valid Resend credentials
+
+## Recommended dev workflow
+
+- Terminal 1 (Frontend): `cd Frontend` then `npm run dev`
+- Terminal 2 (Backend): `cd Backend` then `.venv\Scripts\python.exe -m uvicorn main:app --reload --host 0.0.0.0 --port 8000`
+- Optional one-click: run `..\scripts\start-all.bat` from root
+- Stop and free ports: run `..\scripts\stop-all.bat` from root
 
 ## Common problems
 

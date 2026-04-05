@@ -1,111 +1,126 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { authClient } from '@/lib/auth-client';
+import { useCallback, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+import {
+  getBackendAccessTokenExpiryMs,
+  initializeBackendAuthSession,
+  refreshBackendAccessToken,
+} from "@/lib/backend-api";
 
 /**
- * Component that monitors JWT token expiration and redirects to sign-in when expired
- * For the 2-minute demo: Forces redirect after token expires
+ * Keeps backend API access tokens fresh.
+ * Redirects to sign-in only when refresh and session recovery both fail.
  */
 export default function TokenExpiryMonitor() {
   const router = useRouter();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [checkedOnce, setCheckedOnce] = useState(false);
+  const scheduleRefreshRef = useRef<() => void>(() => {});
 
-  const checkAndScheduleRedirect = () => {
-    // Clear any existing timeout
+  const refreshThresholdRaw =
+    process.env.NEXT_PUBLIC_ACCESS_TOKEN_REFRESH_THRESHOLD_SECONDS;
+  const parsedThreshold = Number.parseInt(refreshThresholdRaw ?? "120", 10);
+  const refreshThresholdMs =
+    Number.isFinite(parsedThreshold) && parsedThreshold >= 0
+      ? parsedThreshold * 1000
+      : 120000;
+
+  const clearExistingTimeout = useCallback(() => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
+
+  const redirectToSignIn = useCallback(() => {
+    router.push("/sign-in");
+    router.refresh();
+  }, [router]);
+
+  const ensureSessionOrRedirect = useCallback(async () => {
+    try {
+      const session = await authClient.getSession();
+      if (!session?.data) {
+        redirectToSignIn();
+        return false;
+      }
+      return true;
+    } catch {
+      redirectToSignIn();
+      return false;
+    }
+  }, [redirectToSignIn]);
+
+  const scheduleRefresh = useCallback(() => {
+    clearExistingTimeout();
+
+    const tokenExpiryMs = getBackendAccessTokenExpiryMs();
+    if (!tokenExpiryMs) {
+      return;
     }
 
-    // Get the JWT token to check its expiration
-    const checkToken = async () => {
-      let token: string | undefined;
-
-      type TokenPluginResponse = { data?: { token?: unknown } } | null | undefined;
-      const authClientWithToken = authClient as unknown as {
-        token?: () => Promise<TokenPluginResponse>;
-      };
-
-      if (typeof authClientWithToken.token === 'function') {
-        try {
-          const tokenResp = await authClientWithToken.token();
-          const candidate = tokenResp?.data?.token;
-          if (typeof candidate === 'string') token = candidate;
-        } catch (error) {
-          console.error('Error getting token:', error);
-        }
-      }
-
-      if (!token) {
-        // If no token, try to get session to see if user is logged in
-        try {
-          const session = await authClient.getSession();
-          if (!session) {
-            // User not logged in, redirect to sign in
-            console.log('No active session, redirecting to sign in...');
-            router.push('/auth/signin');
-            router.refresh();
-            return;
-          }
-        } catch (error) {
-          console.error('Error getting session:', error);
-        }
+    const msUntilRefresh = Math.max(
+      tokenExpiryMs - Date.now() - refreshThresholdMs,
+      0,
+    );
+    timeoutRef.current = setTimeout(async () => {
+      const refreshed = await refreshBackendAccessToken();
+      if (refreshed) {
+        scheduleRefreshRef.current();
         return;
       }
 
-      try {
-        // Decode the JWT token to get expiration time
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const exp = payload.exp; // Expiration time in seconds
-        const now = Math.floor(Date.now() / 1000); // Current time in seconds
-
-        if (exp) {
-          const timeUntilExpiry = (exp - now) * 1000; // Convert to milliseconds
-
-          console.log(`Token expires in ${timeUntilExpiry / 1000} seconds`);
-
-          if (timeUntilExpiry <= 0) {
-            // Token already expired, redirect immediately
-            console.log('Token expired, redirecting to sign in...');
-            router.push('/auth/signin');
-            router.refresh();
-          } else {
-            // Schedule redirect for when token expires
-            console.log(`Scheduling redirect in ${timeUntilExpiry / 1000} seconds...`);
-
-            timeoutRef.current = setTimeout(() => {
-              console.log('Token expired (via timeout), redirecting to sign in...');
-              router.push('/auth/signin');
-              router.refresh();
-            }, timeUntilExpiry);
-          }
-        }
-      } catch (error) {
-        console.error('Error decoding token:', error);
-        // If we can't decode the token, assume it's invalid and redirect
-        router.push('/auth/signin');
-        router.refresh();
+      const recovered = await initializeBackendAuthSession();
+      if (recovered) {
+        scheduleRefreshRef.current();
+        return;
       }
-    };
 
-    checkToken();
-  };
+      await ensureSessionOrRedirect();
+    }, msUntilRefresh);
+  }, [clearExistingTimeout, ensureSessionOrRedirect, refreshThresholdMs]);
 
   useEffect(() => {
-    // Check token expiration immediately
-    checkAndScheduleRedirect();
-    setCheckedOnce(true);
+    scheduleRefreshRef.current = scheduleRefresh;
+  }, [scheduleRefresh]);
 
-    // Clean up on unmount
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+  useEffect(() => {
+    const start = async () => {
+      const initialized = await initializeBackendAuthSession();
+      if (initialized) {
+        scheduleRefresh();
+        return;
       }
-    };
-  }, [router]);
 
-  // This component doesn't render anything, just manages token expiry
+      await ensureSessionOrRedirect();
+    };
+
+    start();
+
+    const onVisibilityChange = async () => {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+
+      if (!getBackendAccessTokenExpiryMs()) {
+        const initialized = await initializeBackendAuthSession();
+        if (!initialized) {
+          await ensureSessionOrRedirect();
+          return;
+        }
+      }
+
+      scheduleRefresh();
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      clearExistingTimeout();
+    };
+  }, [clearExistingTimeout, ensureSessionOrRedirect, scheduleRefresh]);
+
   return null;
 }

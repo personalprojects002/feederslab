@@ -12,12 +12,16 @@ export default function ButtonCheckout() {
     setIsloading(true);
 
     try {
+      // Success/cancel URLs are derived from current location so checkout
+      // returns users to the exact workspace context they started from.
       const response = await backendApi.post("/billing/create-checkout", {
         successUrl: window.location.href + "/success",
         cancelUrl: window.location.href,
       });
 
       const checkoutUrl = response.data.url;
+      // Full-page redirect is required because Stripe Checkout lives on a
+      // hosted domain and cannot be embedded reliably in-app.
       window.location.href = checkoutUrl;
     } catch (error: unknown) {
       let errorMessage = "Something went wrong";
@@ -40,7 +44,7 @@ export default function ButtonCheckout() {
 
   return (
     <button
-      className="inline-flex h-11 items-center justify-center rounded-xl bg-[#0B0B0C] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#1F2937]"
+      className="dashboard-billing-subscribe-btn inline-flex h-11 items-center justify-center rounded-xl px-5 text-sm font-semibold transition-colors"
       onClick={checkOutHandler}
     >
       {isloading ? (

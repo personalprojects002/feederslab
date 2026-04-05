@@ -7,6 +7,8 @@ import { Suspense } from "react";
 export default function Providers({ children }: { children: ReactNode }) {
   return (
     <>
+      {/* Root Suspense ensures async route trees can show a consistent loading
+          fallback during streaming/navigation transitions. */}
       <Suspense
         fallback={
           <div
@@ -19,6 +21,8 @@ export default function Providers({ children }: { children: ReactNode }) {
       >
         {children}
       </Suspense>
+      {/* A single global toaster keeps UX feedback consistent across pages and
+          avoids each component mounting duplicate toast containers. */}
       <Toaster
         position="top-center"
         toastOptions={{

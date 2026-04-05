@@ -34,26 +34,41 @@ This folder contains the API and business logic for FeedersLab.
 
 ## Environment variables
 
-Create `Backend/.env`:
+Copy `Backend/.env.example` to `Backend/.env`, then fill values.
+
+Required keys:
 
 ```env
-DATABASE_URL=postgresql://username:password@host:5432/db_name
-TEST_DATABASE_URL=postgresql://username:password@host:5432/test_db_name
+DATABASE=PROD
+BACKEND_PROD_DATABASE_URL=postgresql://username:password@host:5432/db_name?sslmode=require
+BACKEND_TEST_DATABASE_URL=postgresql://username:password@host:5432/test_db_name?sslmode=require
+
+CORS_ORIGINS=http://localhost:3000,http://localhost:3001
+FRONTEND_ORIGIN=http://localhost:3000
+APP_URL=http://localhost:3000
 
 BETTER_AUTH_SECRET=your_minimum_32_character_secret_here
 
-SB_STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
-SB_PRODUCT_PRICE_ID=price_your_product_price_id
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
+STRIPE_PRODUCT_PRICE_ID=price_your_product_price_id
 STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+
+ACCESS_TOKEN_EXPIRY_SECONDS=1800
+REFRESH_TOKEN_EXPIRY_DAYS=14
+REFRESH_TOKEN_LEEWAY_SECONDS=30
+REFRESH_COOKIE_NAME=feeders_refresh_token
+REFRESH_COOKIE_SECURE=false
+REFRESH_COOKIE_SAMESITE=lax
+REFRESH_COOKIE_PATH=/
 ```
 
 Meaning:
 
-- `DATABASE_URL`: main database connection
-- `TEST_DATABASE_URL`: test database connection
+- `DATABASE`: selects PROD or TEST URL branch
+- `BACKEND_PROD_DATABASE_URL` / `BACKEND_TEST_DATABASE_URL`: database connections
 - `BETTER_AUTH_SECRET`: auth security secret
-- `SB_STRIPE_SECRET_KEY`: Stripe secret key
-- `SB_PRODUCT_PRICE_ID`: Stripe recurring price id
+- `STRIPE_SECRET_KEY`: Stripe secret key
+- `STRIPE_PRODUCT_PRICE_ID`: Stripe recurring price id
 - `STRIPE_WEBHOOK_SECRET`: webhook signature verification key
 
 ## Setup
@@ -85,7 +100,7 @@ cd Backend
 In another terminal:
 
 ```powershell
-stripe listen --forward-to http://localhost:8000/webhook/stripe
+stripe listen --events checkout.session.completed,customer.subscription.deleted --forward-to http://localhost:8000/webhook/stripe
 ```
 
 Copy the generated `whsec_...` value into `STRIPE_WEBHOOK_SECRET`.

@@ -26,9 +26,13 @@ export default function NewBoard() {
       setName("");
 
       if (typeof window !== "undefined") {
+        // Broadcast keeps sidebar/list widgets in sync without introducing a
+        // heavyweight shared-state dependency.
         window.dispatchEvent(new Event("boards:changed"));
       }
 
+      // refresh updates server-rendered dashboard surfaces that depend on board
+      // queries while preserving current client state.
       router.refresh();
     } catch (error: unknown) {
       let errorMessage = "Something went wrong";
@@ -45,7 +49,6 @@ export default function NewBoard() {
         }
       }
 
-      console.error("Error creating board:", errorMessage);
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -54,20 +57,20 @@ export default function NewBoard() {
 
   return (
     <form onSubmit={handleSubmit} className="w-full">
-      <div className="flex flex-col gap-6">
-        <div>
-          <h2 className="text-xl font-semibold tracking-tight text-[#0B0B0C] md:text-2xl">
-            Create a new board
+      <div className="flex flex-col gap-5">
+        <div className="space-y-1.5">
+          <p className="dashboard-newboard-eyebrow">Board setup</p>
+          <h2 className="dashboard-newboard-title text-xl font-semibold tracking-tight md:text-2xl">
+            Create a board
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Give your board a clear name so your team can start collecting
-            useful feedback.
+          <p className="dashboard-newboard-subtitle text-sm">
+            Name your workspace and start collecting feedback in seconds.
           </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+        <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
           <div>
-            <label className="mb-2 block text-sm font-medium text-[#0B0B0C]">
+            <label className="dashboard-newboard-label mb-2 block text-xs font-semibold uppercase tracking-[0.08em]">
               Board name
             </label>
             <input
@@ -77,13 +80,13 @@ export default function NewBoard() {
               placeholder="e.g. Feature Requests"
               onChange={(e) => setName(e.target.value)}
               disabled={isLoading}
-              className="h-12 w-full rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm text-[#0B0B0C] outline-none transition focus:border-[#0B0B0C]"
+              className="dashboard-newboard-input h-12 w-full rounded-xl border px-4 text-sm outline-none transition"
             />
           </div>
 
           <button
             type="submit"
-            className="inline-flex h-12 items-center justify-center rounded-xl bg-[#0B0B0C] px-6 text-sm font-semibold text-white transition-colors hover:bg-[#1F2937]"
+            className="dashboard-newboard-button inline-flex h-12 items-center justify-center rounded-xl px-6 text-sm font-semibold transition-colors"
           >
             {isLoading ? (
               <span className="loading loading-spinner loading-sm"></span>

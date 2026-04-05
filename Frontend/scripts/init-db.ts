@@ -5,7 +5,7 @@ async function initializeDatabase() {
     console.log("Initializing Better Auth database tables...");
     // Better Auth automatically creates tables on first use
     // This just ensures the connection is working
-    await auth.api.getSession({ headers: {} as any });
+    await auth.api.getSession({ headers: new Headers() });
     console.log("✅ Database initialization complete");
   } catch (error) {
     console.error("❌ Database initialization error:", error);

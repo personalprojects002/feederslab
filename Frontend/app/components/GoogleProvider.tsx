@@ -9,6 +9,8 @@ export default function GoogleAuth() {
   const handleSignIn = async () => {
     try {
       setIsPending(true);
+      // Social sign-in delegates trust and MFA capabilities to Google while
+      // still returning users to the product dashboard as the landing context.
       await authClient.signIn.social({
         provider: "google",
         callbackURL: "/dashboard",

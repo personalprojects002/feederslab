@@ -15,6 +15,8 @@ export default function ButtonPortal() {
       const response = await backendApi.post("/billing/create-portal");
 
       const checkoutUrl = response.data.url;
+      // Billing portal is Stripe-hosted, so navigation must leave the app to
+      // preserve Stripe's secure account-management surface.
       window.location.href = checkoutUrl;
     } catch (error: unknown) {
       let errorMessage = "Something went wrong";

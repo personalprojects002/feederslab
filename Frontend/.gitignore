@@ -32,6 +32,13 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# Local deployment exports / package artifacts
+*-production-env.txt
+*docker-runtime.env
+*.tar
+*.tar.gz
 
 # vercel
 .vercel

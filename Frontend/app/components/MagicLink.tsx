@@ -15,6 +15,8 @@ export default function MagicLinkAuth() {
   const [callbackURL, setCallbackURL] = useState("/dashboard");
 
   useEffect(() => {
+    // Build absolute callback on client so auth emails remain valid across
+    // local, preview, and production deployments.
     setCallbackURL(new URL("/dashboard", window.location.origin).toString());
   }, []);
 

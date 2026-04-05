@@ -12,6 +12,8 @@ let pool: Pool;
 let poolPromise: Promise<Pool>;
 
 declare global {
+  // Global caching is used only in development so Next.js hot-reload does not
+  // create a new connection pool on every file save.
   var _pgPool: Pool | undefined;
   var _pgPoolPromise: Promise<Pool> | undefined;
 }
@@ -28,6 +30,8 @@ if (process.env.NODE_ENV === "development") {
       ssl: {
         rejectUnauthorized: false,
       },
+      // Lower dev cap keeps local resource usage predictable while still
+      // supporting concurrent page/API activity during development.
       max: 10,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 60000,
@@ -46,6 +50,8 @@ if (process.env.NODE_ENV === "development") {
     ssl: {
       rejectUnauthorized: false,
     },
+    // Production allows higher concurrency because multiple requests can hit
+    // server actions and API routes at the same time.
     max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 60000,

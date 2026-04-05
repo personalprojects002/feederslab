@@ -3,8 +3,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from src.config.db import get_session
+from src.exceptions import (
+    BadRequestError,
+    BoardNotFoundError,
+    DomainError,
+    UserNotFoundError,
+    to_http_exception,
+)
 from src.middlewares.auth import CurrentUser
-from src.routes.schemas import BoardCreateRequest, BoardResponse, BoardUpdateRequest
+from src.schemas import BoardCreateRequest, BoardResponse, BoardUpdateRequest
 from src.services.board_service import BoardService
 
 router = APIRouter(prefix="/boards", tags=["boards"])
@@ -18,24 +25,15 @@ async def create_board(
 ):
     try:
         if not body.board_name or body.board_name.strip() == "":
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Board name is required"
-            )
+            raise BadRequestError("Board name is required")
 
         service = BoardService(session)
         new_board = await service.create_board(body.board_name, user_email)
 
         return new_board
 
-    except PermissionError as e:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=str(e)
-        )
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
-    except HTTPException:
-        raise
+    except DomainError as e:
+        raise to_http_exception(e)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
@@ -51,10 +49,37 @@ async def get_all_boards(
         boards = await service.get_all_boards(user_email)
         return boards
 
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except HTTPException:
-        raise
+    except DomainError as e:
+        raise to_http_exception(e)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
+
+
+@router.get("/shared/outgoing", response_model=list[BoardResponse])
+async def get_outgoing_shared_boards(
+    user_email: CurrentUser, session: AsyncSession = Depends(get_session)
+):
+    try:
+        service = BoardService(session)
+        rows = await service.get_shared_boards(user_email)
+        # We shape tuples into explicit response objects at the route boundary so
+        # API consumers remain decoupled from service-layer query details.
+        return [
+            BoardResponse(
+                id=board.id,
+                board_name=board.board_name,
+                user_id=board.user_id,
+                created_at=board.created_at,
+                updated_at=board.updated_at,
+                share_links_count=int(share_count or 0),
+            )
+            for board, share_count in rows
+        ]
+
+    except DomainError as e:
+        raise to_http_exception(e)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
@@ -70,16 +95,12 @@ async def get_board(
         board = await service.get_board_by_id(board_id, user_email)
 
         if not board:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Board not found"
-            )
+            raise BoardNotFoundError()
 
         return board
 
-    except PermissionError as e:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
-    except HTTPException:
-        raise
+    except DomainError as e:
+        raise to_http_exception(e)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
@@ -93,31 +114,17 @@ async def update_board(
     user_email: CurrentUser,
     session: AsyncSession = Depends(get_session),
 ):
-    """
-    Update a board's name
-
-    Equivalent to Next.js: PATCH /api/boards/[id]
-
-    Request Body:
-    {
-        "boardName": "Updated Board Name"
-    }
-    """
     try:
         service = BoardService(session)
         board = await service.update_board(board_id, body.board_name, user_email)
 
         if not board:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Board not found"
-            )
+            raise BoardNotFoundError()
 
         return board
 
-    except PermissionError as e:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
-    except HTTPException:
-        raise
+    except DomainError as e:
+        raise to_http_exception(e)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
@@ -133,16 +140,12 @@ async def delete_board(
         deleted = await service.delete_board(board_id, user_email)
 
         if not deleted:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Board not found"
-            )
+            raise BoardNotFoundError()
 
         return {"message": f"Board with id {board_id} successfully deleted"}
 
-    except PermissionError as e:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
-    except HTTPException:
-        raise
+    except DomainError as e:
+        raise to_http_exception(e)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
@@ -160,19 +163,18 @@ async def get_subscription_status(
         user = result.scalars().first()
 
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
-            )
+            raise UserNotFoundError()
 
         return {
             "has_access": user.has_access,
             "customer_id": user.customer_id,
+            # ISO format keeps timezone-aware billing timestamps predictable when
+            # consumed by JS clients and external dashboards.
             "stripe_current_period_end": user.stripe_current_period_end.isoformat() if user.stripe_current_period_end else None
         }
 
-    except HTTPException:
-        raise
+    except DomainError as e:
+        raise to_http_exception(e)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

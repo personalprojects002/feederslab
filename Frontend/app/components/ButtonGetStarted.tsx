@@ -1,7 +1,7 @@
 "use client";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 interface ButtonGetStartedProps {
   className?: string;
@@ -15,12 +15,12 @@ export default function ButtonGetStarted({
   variant = "dark",
 }: ButtonGetStartedProps) {
   const dashboardURL = "/dashboard";
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   const { data: session, isPending } = authClient.useSession();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const baseClasses = `inline-flex items-center justify-center px-5 py-3 text-sm font-semibold transition-colors ${
     width ?? ""
