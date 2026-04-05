@@ -8,7 +8,6 @@ It helps teams collect ideas, vote on priorities, and manage customer requests f
 - Frontend: Next.js app in `Frontend/`
 - Backend: FastAPI app in `Backend/`
 - Local automation scripts: `scripts/`
-- Product specs: `specs/`
 
 ## Stack
 
@@ -45,8 +44,6 @@ It helps teams collect ideas, vote on priorities, and manage customer requests f
 |- scripts/
 |  |- start-all.bat
 |  |- stop-all.bat
-|
-`- specs/
 ```
 
 ## Local setup
@@ -142,4 +139,4 @@ cd Backend
 
 ## License
 
-MIT
+This project is licensed under the MIT License. See [LICENSE](LICENSE).
