@@ -11,6 +11,14 @@ const resendKey = process.env.RESEND_KEY?.toString()?.trim();
 const resendFrom = process.env.RESEND_FROM?.toString()?.trim();
 const sessionExpiryRaw =
   process.env.BETTER_AUTH_SESSION_EXPIRY_SECONDS?.toString()?.trim();
+const serverBaseUrlRaw = process.env.BETTER_AUTH_URL?.toString()?.trim();
+const publicBaseUrlRaw =
+  process.env.NEXT_PUBLIC_BETTER_AUTH_URL?.toString()?.trim();
+const vercelUrlRaw = process.env.VERCEL_URL?.toString()?.trim();
+const vercelProductionUrlRaw =
+  process.env.VERCEL_PROJECT_PRODUCTION_URL?.toString()?.trim();
+const manualTrustedOriginsRaw =
+  process.env.BETTER_AUTH_TRUSTED_ORIGINS?.toString()?.trim();
 
 const defaultSessionExpirySeconds = 14 * 24 * 60 * 60;
 const parsedSessionExpirySeconds = Number.parseInt(
@@ -47,12 +55,66 @@ if (!resendKey) {
 
 // Get the base URL - support dynamic ports
 const getBaseURL = () => {
-  if (process.env.NEXT_PUBLIC_BETTER_AUTH_URL) {
-    return process.env.NEXT_PUBLIC_BETTER_AUTH_URL;
+  if (serverBaseUrlRaw) {
+    return serverBaseUrlRaw;
+  }
+  if (publicBaseUrlRaw) {
+    return publicBaseUrlRaw;
+  }
+  if (vercelUrlRaw) {
+    // Vercel provides this per-deployment host; using it avoids localhost
+    // fallback in cloud environments where explicit base URLs were not set.
+    return `https://${vercelUrlRaw}`;
   }
   // Default to localhost with any port
   return "http://localhost:3000";
 };
+
+const normalizeOrigin = (value: string | undefined): string | null => {
+  if (!value) {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const withProtocol = /^https?:\/\//i.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
+
+  try {
+    return new URL(withProtocol).origin;
+  } catch {
+    return null;
+  }
+};
+
+const buildTrustedOrigins = (): string[] => {
+  const baseCandidates = [
+    serverBaseUrlRaw,
+    publicBaseUrlRaw,
+    vercelUrlRaw,
+    vercelProductionUrlRaw,
+    "http://localhost:3000",
+    "http://localhost:3001",
+  ];
+
+  const manualCandidates = (manualTrustedOriginsRaw || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  const allCandidates = [...baseCandidates, ...manualCandidates];
+  const normalized = allCandidates
+    .map((item) => normalizeOrigin(item))
+    .filter((item): item is string => Boolean(item));
+
+  return Array.from(new Set(normalized));
+};
+
+const trustedOrigins = buildTrustedOrigins();
 
 export const auth = betterAuth({
   appName: "Feeders",
@@ -60,6 +122,9 @@ export const auth = betterAuth({
   secret: authSecret,
   trustHost: true,
   baseURL: getBaseURL(),
+  // Better Auth rejects non-trusted origins by default; adding deployment and
+  // preview hosts prevents valid sign-in attempts from being treated as forged.
+  trustedOrigins,
   session: {
     expiresIn: resolvedSessionExpirySeconds,
     // We keep explicit refresh boundaries instead of silent extension so

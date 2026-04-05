@@ -89,7 +89,7 @@ export default function FeedbackBoard({ params }: Props) {
   if (loading) {
     return (
       <div className="min-h-screen bg-black">
-        <div className="mx-auto w-full max-w-5xl px-6 py-8 md:px-10">
+        <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 md:px-10 md:py-8">
           <div className="rounded-2xl border border-white/15 bg-[#101010] p-10">
             <div className="flex justify-center py-12">
               <span className="loading loading-spinner loading-lg"></span>
@@ -104,7 +104,7 @@ export default function FeedbackBoard({ params }: Props) {
   if (error) {
     return (
       <div className="min-h-screen bg-black">
-        <div className="mx-auto w-full max-w-5xl px-6 py-8 md:px-10">
+        <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 md:px-10 md:py-8">
           <div className="mb-5">
             <Link
               href="/dashboard"
@@ -137,7 +137,7 @@ export default function FeedbackBoard({ params }: Props) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl">
+    <div className="mx-auto w-full max-w-5xl px-1 sm:px-0">
       <div className="mb-4">
         <Link
           href="/dashboard"

@@ -429,10 +429,10 @@ export default function FeatureBoardClient({
   };
 
   return (
-    <div className="dashboard-feature-shell rounded-2xl border p-6 md:p-8">
+    <div className="dashboard-feature-shell rounded-2xl border p-4 sm:p-5 md:p-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="dashboard-feature-title text-2xl font-semibold tracking-tight md:text-3xl">
+          <h1 className="dashboard-feature-title break-words text-2xl font-semibold tracking-tight md:text-3xl">
             {boardName}
           </h1>
           <p className="dashboard-feature-subtitle mt-2 text-sm">
@@ -442,11 +442,11 @@ export default function FeatureBoardClient({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
           {isOwner ? (
             <button
               onClick={() => setShareOpen(true)}
-              className="dashboard-feature-secondary-btn inline-flex h-10 items-center justify-center rounded-xl border px-4 text-sm font-semibold"
+              className="dashboard-feature-secondary-btn inline-flex h-10 w-full items-center justify-center rounded-xl border px-4 text-sm font-semibold sm:w-auto"
             >
               Share board
             </button>
@@ -455,7 +455,7 @@ export default function FeatureBoardClient({
           {isOwner ? (
             <button
               onClick={handleDeleteBoard}
-              className="inline-flex h-10 items-center justify-center rounded-xl border border-red-200 bg-red-50 px-4 text-sm font-semibold text-red-700 hover:bg-red-100"
+              className="inline-flex h-10 w-full items-center justify-center rounded-xl border border-red-200 bg-red-50 px-4 text-sm font-semibold text-red-700 hover:bg-red-100 sm:w-auto"
             >
               Delete board
             </button>
@@ -497,7 +497,7 @@ export default function FeatureBoardClient({
             <button
               type="submit"
               disabled={creating}
-              className="dashboard-feature-primary-btn inline-flex h-11 items-center justify-center rounded-xl px-5 text-sm font-semibold disabled:opacity-60"
+              className="dashboard-feature-primary-btn inline-flex h-11 w-full items-center justify-center rounded-xl px-5 text-sm font-semibold disabled:opacity-60 md:w-auto"
             >
               {creating ? (
                 <span className="loading loading-spinner loading-xs" />
@@ -545,7 +545,7 @@ export default function FeatureBoardClient({
                 <button
                   onClick={() => handleUpvoteToggle(feature)}
                   disabled={busyFeatureId === feature.id}
-                  className={`dashboard-feature-upvote-btn inline-flex h-10 min-w-[124px] items-center justify-center gap-1.5 rounded-xl border px-3 text-sm font-semibold transition-all ${
+                  className={`dashboard-feature-upvote-btn inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-xl border px-3 text-sm font-semibold transition-all sm:min-w-[124px] sm:w-auto ${
                     isUpvoted
                       ? "dashboard-feature-upvote-active border-black bg-black text-white shadow-[0_10px_24px_rgba(0,0,0,0.45)]"
                       : "dashboard-feature-upvote-inactive border-[#111111] bg-white text-[#111111] hover:bg-black hover:text-white"
@@ -576,12 +576,12 @@ export default function FeatureBoardClient({
                 {canDeleteFeature(feature) ? (
                   <button
                     onClick={() => handleDeleteFeature(feature)}
-                    className="inline-flex h-9 items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 text-xs font-semibold text-red-700 hover:bg-red-100"
+                    className="inline-flex h-9 w-full items-center justify-center rounded-lg border border-red-200 bg-red-50 px-3 text-xs font-semibold text-red-700 hover:bg-red-100 sm:w-auto"
                   >
                     Delete
                   </button>
                 ) : (
-                  <div />
+                  <div className="hidden md:block" />
                 )}
               </div>
             );

@@ -28,7 +28,7 @@ export default function DashboardWrapper({
   return (
     <div
       data-dashboard-theme={theme}
-      className={`min-h-screen transition-colors ${
+      className={`min-h-screen overflow-x-hidden transition-colors ${
         isDark ? "bg-black text-white" : "bg-[#F5F5F7] text-[#0B0B0C]"
       }`}
     >
@@ -40,21 +40,30 @@ export default function DashboardWrapper({
           isDark ? "border-white/10 bg-[#060606]" : "border-[#E5E7EB] bg-white"
         }`}
       >
-        <button
-          onClick={() => setMobileOpen((prev) => !prev)}
-          className={`inline-flex h-10 items-center justify-center rounded-xl border px-4 text-sm font-semibold transition-colors ${
-            isDark
-              ? "border-white/20 bg-black text-white hover:bg-[#151515]"
-              : "border-[#E5E7EB] bg-white text-[#0B0B0C] hover:bg-[#F9FAFB]"
-          }`}
-          aria-expanded={mobileOpen}
-          aria-controls="dashboard-mobile-menu"
-        >
-          {mobileOpen ? "Toggle Back" : "Menu"}
-        </button>
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3">
+          <span
+            className={`truncate text-base font-semibold tracking-tight ${
+              isDark ? "text-white" : "text-[#0B0B0C]"
+            }`}
+          >
+            FeedersLab Dashboard
+          </span>
+          <button
+            onClick={() => setMobileOpen((prev) => !prev)}
+            className={`inline-flex h-10 shrink-0 items-center justify-center rounded-xl border px-4 text-sm font-semibold transition-colors ${
+              isDark
+                ? "border-white/20 bg-black text-white hover:bg-[#151515]"
+                : "border-[#E5E7EB] bg-white text-[#0B0B0C] hover:bg-[#F9FAFB]"
+            }`}
+            aria-expanded={mobileOpen}
+            aria-controls="dashboard-mobile-menu"
+          >
+            {mobileOpen ? "Close" : "Menu"}
+          </button>
+        </div>
       </div>
 
-      <div className="flex min-h-[calc(100vh-0px)]">
+      <div className="flex min-h-[calc(100vh-0px)] min-w-0">
         <div
           className={`hidden border-r transition-all duration-300 md:block ${
             isDark
@@ -81,7 +90,7 @@ export default function DashboardWrapper({
             />
             <div
               id="dashboard-mobile-menu"
-              className="absolute left-0 top-0 h-full w-72 max-w-[82vw]"
+              className="absolute left-0 top-0 h-full w-[88vw] max-w-sm"
             >
               <div
                 className={`flex items-center justify-end border-b px-3 py-2 ${
@@ -99,7 +108,7 @@ export default function DashboardWrapper({
                       : "border-[#D4D4D8] text-[#111827] hover:bg-[#F3F4F6]"
                   }`}
                 >
-                  Toggle Back
+                  Close
                 </button>
               </div>
               <DashboardSidebar
@@ -113,7 +122,7 @@ export default function DashboardWrapper({
           </div>
         ) : null}
 
-        <main className="dashboard-main-canvas flex-1 p-4 md:p-7">
+        <main className="dashboard-main-canvas w-full min-w-0 flex-1 p-3 sm:p-4 md:p-7">
           {children}
         </main>
       </div>

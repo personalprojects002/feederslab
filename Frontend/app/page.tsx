@@ -27,7 +27,7 @@ export default function Home() {
     <main>
       <header className="border-b border-[#E5E7EB] bg-white/90 backdrop-blur sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 lg:px-10 flex h-16 sm:h-20 items-center justify-between">
-          <div className="-ml-[30px] text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight text-[#0B0B0C]">
+          <div className="shrink-0 text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight text-[#0B0B0C]">
             FeedersLab
           </div>
           <nav className="hidden md:flex items-center gap-6 lg:gap-10 text-sm lg:text-base text-gray-600">
@@ -41,7 +41,7 @@ export default function Home() {
               FAQ
             </a>
           </nav>
-          <ButtonGetStarted className="rounded-lg px-4 sm:px-6 lg:px-7 py-2 sm:py-2.5 lg:py-3 text-xs sm:text-sm lg:text-base" />
+          <ButtonGetStarted className="max-w-[46vw] truncate whitespace-nowrap rounded-lg px-3 sm:max-w-none sm:px-6 lg:px-7 py-2 sm:py-2.5 lg:py-3 text-xs sm:text-sm lg:text-base" />
         </div>
       </header>
 

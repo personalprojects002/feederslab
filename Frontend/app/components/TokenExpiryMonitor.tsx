@@ -38,19 +38,32 @@ export default function TokenExpiryMonitor() {
     router.refresh();
   }, [router]);
 
+  const wait = useCallback(async (ms: number) => {
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, ms);
+    });
+  }, []);
+
   const ensureSessionOrRedirect = useCallback(async () => {
-    try {
-      const session = await authClient.getSession();
-      if (!session?.data) {
-        redirectToSignIn();
-        return false;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        const session = await authClient.getSession();
+        if (session?.data) {
+          return true;
+        }
+      } catch {
+        // Ignore transient probe failures and retry before redirecting.
       }
-      return true;
-    } catch {
-      redirectToSignIn();
-      return false;
+
+      if (attempt < 2) {
+        // Callback/session cookies can lag briefly after auth redirects.
+        await wait(350 * (attempt + 1));
+      }
     }
-  }, [redirectToSignIn]);
+
+    redirectToSignIn();
+    return false;
+  }, [redirectToSignIn, wait]);
 
   const scheduleRefresh = useCallback(() => {
     clearExistingTimeout();
