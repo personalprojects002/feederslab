@@ -328,6 +328,12 @@ export default function BoardInsightsPanel() {
   }, [maxValue, minValue]);
 
   const chartSubtitle = "Feature votes ranked high to low";
+  const emptyChartMessage =
+    boards.length === 0
+      ? "Create a board to start charting live votes."
+      : features.length === 0
+        ? "No features yet for this board."
+        : null;
 
   const shellClass = isDark
     ? "border-white/10 bg-[#050505] text-white shadow-[0_20px_44px_rgba(0,0,0,0.52)]"
@@ -473,6 +479,16 @@ export default function BoardInsightsPanel() {
                 isDark ? "text-white" : "text-slate-700"
               }`}
             ></span>
+          </div>
+        ) : emptyChartMessage ? (
+          <div
+            className={`flex h-[240px] items-center justify-center rounded-xl border border-dashed p-6 text-center text-sm md:h-[300px] ${
+              isDark
+                ? "border-white/15 bg-black/40 text-white/60"
+                : "border-[#D6DEE8] bg-[#F8FAFC] text-slate-600"
+            }`}
+          >
+            {emptyChartMessage}
           </div>
         ) : (
           <div className="relative h-[340px] w-full md:h-[390px]">
@@ -679,41 +695,23 @@ export default function BoardInsightsPanel() {
                 </p>
               </div>
             ) : null}
-
-            {boards.length === 0 ? (
-              <div
-                className={`absolute inset-0 flex items-center justify-center text-sm ${
-                  isDark ? "text-white/50" : "text-slate-500"
-                }`}
-              >
-                Create a board to start charting live votes.
-              </div>
-            ) : null}
-
-            {boards.length > 0 && features.length === 0 ? (
-              <div
-                className={`absolute inset-0 flex items-center justify-center text-sm ${
-                  isDark ? "text-white/50" : "text-slate-500"
-                }`}
-              >
-                No features yet for this board.
-              </div>
-            ) : null}
           </div>
         )}
 
-        <div
-          className={`mt-3 flex flex-wrap items-center justify-between gap-2 text-xs ${
-            isDark ? "text-white/55" : "text-slate-600"
-          }`}
-        >
-          <span>Features: {features.length}</span>
-          <span>Top votes: {peakPoint?.value ?? 0}</span>
-          <span>
-            Lowest votes: {lowestPoint?.value ?? 0}
-            {lowestPoint?.title ? ` (${lowestPoint.title})` : ""}
-          </span>
-        </div>
+        {emptyChartMessage ? null : (
+          <div
+            className={`mt-3 flex flex-wrap items-center justify-between gap-2 text-xs ${
+              isDark ? "text-white/55" : "text-slate-600"
+            }`}
+          >
+            <span>Features: {features.length}</span>
+            <span>Top votes: {peakPoint?.value ?? 0}</span>
+            <span>
+              Lowest votes: {lowestPoint?.value ?? 0}
+              {lowestPoint?.title ? ` (${lowestPoint.title})` : ""}
+            </span>
+          </div>
+        )}
       </div>
     </section>
   );

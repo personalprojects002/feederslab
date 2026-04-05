@@ -24,8 +24,11 @@ export default function BillingActionButton() {
       try {
         const initialized = await initializeBackendAuthSession();
         if (!initialized) {
-          // Auth flow will redirect; keep loading to avoid wrong fallback button flash.
-          shouldStopLoading = false;
+          // Do not keep spinner forever if backend token bootstrap is delayed;
+          // fall back to checkout state and allow normal user interaction.
+          if (isMounted) {
+            setStatus({ has_access: false, customer_id: null });
+          }
           return;
         }
 
@@ -45,14 +48,16 @@ export default function BillingActionButton() {
               }
               return;
             } catch {
-              // If retry also fails, allow global auth flow to redirect.
-              shouldStopLoading = false;
+              if (isMounted) {
+                setStatus({ has_access: false, customer_id: null });
+              }
               return;
             }
           }
 
-          // Let global auth redirect handle unrecoverable 401.
-          shouldStopLoading = false;
+          if (isMounted) {
+            setStatus({ has_access: false, customer_id: null });
+          }
           return;
         }
 

@@ -23,7 +23,12 @@ class BoardService:
         user = result.scalars().first()
 
         if not user:
-            raise ForbiddenActionError("You are not allowed to create a board")
+            # In this product, board creation is subscription-gated. If the
+            # user profile row is missing, we still surface the subscription
+            # requirement instead of an opaque authorization error.
+            raise SubscriptionRequiredError(
+                "Subscription required. Please subscribe to create boards."
+            )
 
         # Ensure user has an ID before creating board
         if not user.id:

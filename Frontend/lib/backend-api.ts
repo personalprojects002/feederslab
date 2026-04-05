@@ -239,6 +239,21 @@ function isProtectedRouteForAuthRecovery(url: string): boolean {
   return !isSharedRoute(url) && !isAuthRoute(url);
 }
 
+async function resolveAuthorizationToken(): Promise<string | null> {
+  if (!isBackendAccessTokenStale() && backendAccessToken) {
+    return backendAccessToken;
+  }
+
+  const initialized = await initializeBackendAuthSession();
+  if (initialized && !isBackendAccessTokenStale() && backendAccessToken) {
+    return backendAccessToken;
+  }
+
+  // Fallback to Better Auth JWT keeps protected backend endpoints usable even
+  // when backend-specific token bootstrap is temporarily unavailable.
+  return await getBetterAuthJwtToken();
+}
+
 async function hasBetterAuthSession(): Promise<boolean> {
   try {
     const session = await authClient.getSession();
@@ -289,13 +304,16 @@ backendApi.interceptors.request.use(
     try {
       const requestUrl = `${config.url ?? ""}`;
 
-      if (!isSharedRoute(requestUrl) && isBackendAccessTokenStale()) {
-        // Public share routes should stay accessible even when user session
-        // recovery fails, so we skip forced auth bootstrap there.
-        await initializeBackendAuthSession();
-      }
-
-      if (!isBackendAccessTokenStale() && backendAccessToken) {
+      if (!isSharedRoute(requestUrl)) {
+        const authorizationToken = await resolveAuthorizationToken();
+        if (authorizationToken) {
+          config.headers = config.headers ?? {};
+          const headers = config.headers as Record<string, unknown>;
+          headers.Authorization = `Bearer ${authorizationToken}`;
+        }
+      } else if (!isBackendAccessTokenStale() && backendAccessToken) {
+        // Shared routes are public, but if we already have a backend token we
+        // can still attach it for richer behavior without forcing auth init.
         config.headers = config.headers ?? {};
         const headers = config.headers as Record<string, unknown>;
         headers.Authorization = `Bearer ${backendAccessToken}`;
@@ -347,6 +365,10 @@ backendApi.interceptors.response.use(
           ) {
             retryToken = backendAccessToken;
           }
+        }
+
+        if (!retryToken) {
+          retryToken = await getBetterAuthJwtToken();
         }
 
         if (retryToken) {
