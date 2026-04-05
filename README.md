@@ -1,7 +1,6 @@
 # FeedersLab
 
-FeedersLab is a feedback platform for product teams.
-It helps teams collect ideas, vote on priorities, and manage customer requests from one place.
+FeedersLab is a feedback platform for product teams that helps them collect feedback about which features their customers want, so they can build the right features.
 
 ## What is in this repository
 
