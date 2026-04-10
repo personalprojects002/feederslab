@@ -90,7 +90,7 @@ export default function DashboardWrapper({
             />
             <div
               id="dashboard-mobile-menu"
-              className="absolute left-0 top-0 h-full w-[88vw] max-w-sm"
+              className="absolute left-0 top-0 h-full w-[80vw] max-w-xs flex flex-col"
             >
               <div
                 className={`flex items-center justify-end border-b px-3 py-2 ${
@@ -111,13 +111,15 @@ export default function DashboardWrapper({
                   Close
                 </button>
               </div>
-              <DashboardSidebar
-                theme={theme}
-                onNavigate={() => setMobileOpen(false)}
-                onToggleTheme={() =>
-                  setTheme((prev) => (prev === "dark" ? "light" : "dark"))
-                }
-              />
+              <div className="flex-1 min-h-0 overflow-y-auto">
+                <DashboardSidebar
+                  theme={theme}
+                  onNavigate={() => setMobileOpen(false)}
+                  onToggleTheme={() =>
+                    setTheme((prev) => (prev === "dark" ? "light" : "dark"))
+                  }
+                />
+              </div>
             </div>
           </div>
         ) : null}

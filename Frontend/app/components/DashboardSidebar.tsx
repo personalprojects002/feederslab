@@ -17,7 +17,7 @@ import {
 
 const productIcon = "/icon-circle.svg";
 
-const futureSections = ["Roadmap", "Changelog", "Analytics"];
+const futureSections = ["Roadmap", "Changelog"];
 const SIDEBAR_CACHE_KEY = "feeders_sidebar_cache_v1";
 
 type DashboardTheme = "dark" | "light";
@@ -427,6 +427,7 @@ export default function DashboardSidebar({
         className={`flex-1 overflow-y-auto ${
           collapsed ? "space-y-4 px-2 py-3" : "space-y-6 px-2.5 py-4"
         }`}
+        style={{ minHeight: 0 }}
       >
         <section>
           {!collapsed ? (
@@ -667,11 +668,12 @@ export default function DashboardSidebar({
 
       {!collapsed ? (
         <div
-          className={`flex flex-col gap-[15px] border-t p-4 ${
+          className={`sticky bottom-0 left-0 flex flex-col gap-[15px] border-t p-4 z-10 bg-inherit ${
             isDark
               ? "border-white/10 bg-[#050505]"
               : "border-[#E5E7EB] bg-[#FCFCFD]"
           }`}
+          style={{ marginTop: "auto" }}
         >
           <BillingActionButton />
           <ButtonLogout />
