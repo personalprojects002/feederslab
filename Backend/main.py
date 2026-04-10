@@ -60,6 +60,6 @@ app.include_router(auth_router)
 # Root endpoint for welcome message
 @app.get("/", tags=["Root"])
 async def root():
-    return {"message": "welcome to feedderslab"}
+    return {"message": "Welcome to Feedderslab"}
 
 app.include_router(webhook_router)
