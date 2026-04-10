@@ -1,95 +1,14 @@
 import axios from "axios";
 import { authClient } from "./auth-client";
 
-// This module centralizes backend auth token lifecycle so components never
-// duplicate refresh/bootstrap logic and API behavior remains consistent.
-
 const rawBackendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 const backendBaseUrl =
   rawBackendUrl && rawBackendUrl.trim().length > 0
     ? rawBackendUrl.trim()
     : "http://localhost:8000";
 
-const refreshThresholdRaw =
-  process.env.NEXT_PUBLIC_ACCESS_TOKEN_REFRESH_THRESHOLD_SECONDS;
-const parsedRefreshThreshold = Number.parseInt(
-  refreshThresholdRaw ?? "120",
-  10,
-);
-const refreshThresholdSeconds =
-  Number.isFinite(parsedRefreshThreshold) && parsedRefreshThreshold >= 0
-    ? parsedRefreshThreshold
-    : 120;
-// Refresh-before-expiry buffer reduces race conditions where requests leave
-// with tokens that expire while in flight.
-
-type RefreshResponse = {
-  accessToken?: string;
-  expiresIn?: number;
-};
-
-let backendAccessToken: string | null = null;
-let backendAccessTokenExpiresAtMs: number | null = null;
-let refreshInFlight: Promise<string | null> | null = null;
-let bootstrapInFlight: Promise<boolean> | null = null;
 let lastForcedSignInRedirectAtMs = 0;
-
-const authTransport = axios.create({
-  baseURL: backendBaseUrl,
-  headers: {
-    "Content-Type": "application/json",
-  },
-  withCredentials: true,
-});
-
-function decodeTokenExpMs(token: string): number | null {
-  try {
-    const tokenParts = token.split(".");
-    if (tokenParts.length < 2) return null;
-    const payload = JSON.parse(atob(tokenParts[1]));
-    if (typeof payload?.exp !== "number") return null;
-    return payload.exp * 1000;
-  } catch {
-    return null;
-  }
-}
-
-function setBackendAccessToken(token: string, expiresIn?: number): void {
-  backendAccessToken = token;
-
-  if (
-    typeof expiresIn === "number" &&
-    Number.isFinite(expiresIn) &&
-    expiresIn > 0
-  ) {
-    backendAccessTokenExpiresAtMs = Date.now() + expiresIn * 1000;
-    return;
-  }
-
-  backendAccessTokenExpiresAtMs = decodeTokenExpMs(token);
-}
-
-export function clearBackendAccessToken(): void {
-  backendAccessToken = null;
-  backendAccessTokenExpiresAtMs = null;
-}
-
-export function getBackendAccessTokenExpiryMs(): number | null {
-  return backendAccessTokenExpiresAtMs;
-}
-
-function isBackendAccessTokenStale(): boolean {
-  if (!backendAccessToken || !backendAccessTokenExpiresAtMs) {
-    return true;
-  }
-  const thresholdMs = refreshThresholdSeconds * 1000;
-  // Proactive staleness check avoids burst failures from multiple concurrent
-  // requests all discovering expiry at the same moment.
-  return backendAccessTokenExpiresAtMs - Date.now() <= thresholdMs;
-}
-
 async function getBetterAuthJwtToken(): Promise<string | null> {
-  // Try to get token from jwtClient plugin
   type TokenPluginResponse = { data?: { token?: unknown } } | null | undefined;
   const authClientWithToken = authClient as unknown as {
     token?: () => Promise<TokenPluginResponse>;
@@ -103,11 +22,10 @@ async function getBetterAuthJwtToken(): Promise<string | null> {
         return candidate;
       }
     } catch {
-      // Token endpoint failed; continue to session fallback.
+      // Token endpoint failed, try fallback.
     }
   }
 
-  // Fallback: get session and extract token
   try {
     const session = await authClient.getSession();
     if (session?.data) {
@@ -116,6 +34,7 @@ async function getBetterAuthJwtToken(): Promise<string | null> {
         const dataShape = sessionData as {
           token?: unknown;
           session?: { token?: unknown };
+          user?: { id?: string };
         };
         if (typeof dataShape.token === "string") {
           return dataShape.token;
@@ -132,138 +51,14 @@ async function getBetterAuthJwtToken(): Promise<string | null> {
   return null;
 }
 
-async function requestAccessTokenRefresh(): Promise<string | null> {
-  try {
-    const response = await authTransport.post<RefreshResponse>(
-      "/auth/refresh",
-      {},
-    );
-    const accessToken = response.data?.accessToken;
-    if (typeof accessToken !== "string" || accessToken.length === 0) {
-      clearBackendAccessToken();
-      return null;
-    }
+const backendApi = axios.create({
+  baseURL: backendBaseUrl,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
-    setBackendAccessToken(accessToken, response.data?.expiresIn);
-    return accessToken;
-  } catch {
-    clearBackendAccessToken();
-    return null;
-  }
-}
-
-export async function refreshBackendAccessToken(): Promise<string | null> {
-  if (refreshInFlight) {
-    // Coalescing refresh calls prevents duplicate refresh attempts from racing
-    // and overwriting each other's token state.
-    return refreshInFlight;
-  }
-
-  refreshInFlight = (async () => {
-    return requestAccessTokenRefresh();
-  })();
-
-  try {
-    return await refreshInFlight;
-  } finally {
-    refreshInFlight = null;
-  }
-}
-
-async function issueRefreshTokenFromSession(): Promise<string | null> {
-  const betterAuthToken = await getBetterAuthJwtToken();
-  if (!betterAuthToken) {
-    return null;
-  }
-
-  try {
-    const response = await authTransport.post<RefreshResponse>(
-      "/auth/generate-refresh-token",
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${betterAuthToken}`,
-        },
-      },
-    );
-
-    const accessToken = response.data?.accessToken;
-    if (typeof accessToken !== "string" || accessToken.length === 0) {
-      return null;
-    }
-
-    setBackendAccessToken(accessToken, response.data?.expiresIn);
-    return accessToken;
-  } catch {
-    return null;
-  }
-}
-
-export async function initializeBackendAuthSession(): Promise<boolean> {
-  if (!isBackendAccessTokenStale()) {
-    return true;
-  }
-
-  if (bootstrapInFlight) {
-    // Collapse concurrent callers into one bootstrap request to prevent
-    // auth stampedes during app startup or tab visibility changes.
-    return bootstrapInFlight;
-  }
-
-  bootstrapInFlight = (async () => {
-    const refreshed = await refreshBackendAccessToken();
-    if (refreshed) {
-      return true;
-    }
-
-    const issued = await issueRefreshTokenFromSession();
-    return Boolean(issued);
-  })();
-
-  try {
-    return await bootstrapInFlight;
-  } finally {
-    bootstrapInFlight = null;
-  }
-}
-
-function isSharedRoute(url: string): boolean {
-  return url.startsWith("/shared/");
-}
-
-function isAuthRoute(url: string): boolean {
-  return url.startsWith("/auth/");
-}
-
-function isProtectedRouteForAuthRecovery(url: string): boolean {
-  return !isSharedRoute(url) && !isAuthRoute(url);
-}
-
-async function resolveAuthorizationToken(): Promise<string | null> {
-  if (!isBackendAccessTokenStale() && backendAccessToken) {
-    return backendAccessToken;
-  }
-
-  const initialized = await initializeBackendAuthSession();
-  if (initialized && !isBackendAccessTokenStale() && backendAccessToken) {
-    return backendAccessToken;
-  }
-
-  // Fallback to Better Auth JWT keeps protected backend endpoints usable even
-  // when backend-specific token bootstrap is temporarily unavailable.
-  return await getBetterAuthJwtToken();
-}
-
-async function hasBetterAuthSession(): Promise<boolean> {
-  try {
-    const session = await authClient.getSession();
-    return Boolean(session?.data);
-  } catch {
-    return false;
-  }
-}
-
-async function redirectToSignInIfSessionMissing(reason: string): Promise<void> {
+async function redirectToSignInIfSessionMissing(): Promise<void> {
   if (
     typeof window === "undefined" ||
     window.location.pathname === "/sign-in"
@@ -276,14 +71,13 @@ async function redirectToSignInIfSessionMissing(reason: string): Promise<void> {
     return;
   }
 
-  const sessionExists = await hasBetterAuthSession();
-  if (sessionExists) {
-    // When Better Auth session is still valid, backend token sync may just be
-    // transiently unavailable. Avoid kicking users out repeatedly.
-    console.warn(
-      "Skipped sign-in redirect because Better Auth session exists:",
-      reason,
-    );
+  try {
+    const session = await authClient.getSession();
+    if (session?.data) {
+      return;
+    }
+  } catch {
+    // If session probe fails, keep current page and wait for next request.
     return;
   }
 
@@ -291,35 +85,19 @@ async function redirectToSignInIfSessionMissing(reason: string): Promise<void> {
   window.location.href = "/sign-in";
 }
 
-const backendApi = axios.create({
-  baseURL: backendBaseUrl,
-  headers: {
-    "Content-Type": "application/json",
-  },
-  withCredentials: true,
-});
-
 backendApi.interceptors.request.use(
   async (config) => {
     try {
-      const requestUrl = `${config.url ?? ""}`;
-
-      if (!isSharedRoute(requestUrl)) {
-        const authorizationToken = await resolveAuthorizationToken();
-        if (authorizationToken) {
-          config.headers = config.headers ?? {};
-          const headers = config.headers as Record<string, unknown>;
-          headers.Authorization = `Bearer ${authorizationToken}`;
-        }
-      } else if (!isBackendAccessTokenStale() && backendAccessToken) {
-        // Shared routes are public, but if we already have a backend token we
-        // can still attach it for richer behavior without forcing auth init.
+      const token = await getBetterAuthJwtToken();
+      if (token) {
         config.headers = config.headers ?? {};
         const headers = config.headers as Record<string, unknown>;
-        headers.Authorization = `Bearer ${backendAccessToken}`;
+        headers.Authorization = `Bearer ${token}`;
+      } else {
+        console.debug("⚠️ No auth token available for request");
       }
     } catch (error) {
-      console.warn("Auth token bootstrap warning:", error);
+      console.error("❌ Error getting auth token:", error);
     }
 
     return config;
@@ -332,85 +110,12 @@ backendApi.interceptors.request.use(
 backendApi.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401 && axios.isAxiosError(error)) {
-      const originalRequest = error.config as typeof error.config & {
-        _authRetried?: boolean;
-      };
-
-      const requestUrl = `${originalRequest?.url ?? ""}`;
-      const canRetry =
-        Boolean(originalRequest) && !originalRequest?._authRetried;
-      const isRefreshEndpoint = requestUrl.startsWith("/auth/refresh");
-      const isGenerateEndpoint = requestUrl.startsWith(
-        "/auth/generate-refresh-token",
+    if (error.response?.status === 401) {
+      console.error(
+        "❌ Unauthorized - token invalid/expired",
+        error.response?.data?.detail || error.message,
       );
-
-      if (
-        canRetry &&
-        !isRefreshEndpoint &&
-        !isGenerateEndpoint &&
-        isProtectedRouteForAuthRecovery(requestUrl)
-      ) {
-        originalRequest._authRetried = true;
-
-        let retryToken = await refreshBackendAccessToken();
-
-        // If cookie-refresh is unavailable (first load/new tab), try issuing from active Better Auth session.
-        if (!retryToken) {
-          const bootstrapped = await initializeBackendAuthSession();
-          if (
-            bootstrapped &&
-            backendAccessToken &&
-            !isBackendAccessTokenStale()
-          ) {
-            retryToken = backendAccessToken;
-          }
-        }
-
-        if (!retryToken) {
-          retryToken = await getBetterAuthJwtToken();
-        }
-
-        if (retryToken) {
-          // Retrying once after successful recovery keeps UX smooth without
-          // creating infinite loops on persistent auth failures.
-          originalRequest.headers = originalRequest.headers ?? {};
-          const headers = originalRequest.headers as Record<string, unknown>;
-          headers.Authorization = `Bearer ${retryToken}`;
-          return backendApi(originalRequest);
-        }
-
-        clearBackendAccessToken();
-        await redirectToSignInIfSessionMissing("backend 401 after retry");
-      }
-
-      // If we already retried and still received 401 on a protected route,
-      // force sign-in to prevent stale UI state (e.g. showing Subscribe by fallback).
-      if (
-        !canRetry &&
-        isProtectedRouteForAuthRecovery(requestUrl) &&
-        typeof window !== "undefined"
-      ) {
-        clearBackendAccessToken();
-        await redirectToSignInIfSessionMissing(
-          "backend 401 after exhausted recovery",
-        );
-      }
-
-      const detail = `${error.response?.data?.detail || error.message}`;
-      const expectedAuthExpiry =
-        detail.toLowerCase().includes("expired") ||
-        detail.toLowerCase().includes("not authorized") ||
-        detail.toLowerCase().includes("unauthorized");
-
-      if (expectedAuthExpiry) {
-        console.warn(
-          "Auth session expired; recovery/redirect applied.",
-          detail,
-        );
-      } else {
-        console.error("❌ Unauthorized - token invalid/expired", detail);
-      }
+      await redirectToSignInIfSessionMissing();
     }
 
     if (axios.isAxiosError(error) && !error.response) {

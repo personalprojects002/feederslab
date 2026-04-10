@@ -38,10 +38,8 @@ Required keys:
 ```env
 NEXT_PUBLIC_BACKEND_API_URL=http://localhost:8000
 NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
-NEXT_PUBLIC_ACCESS_TOKEN_REFRESH_THRESHOLD_SECONDS=120
 
 BETTER_AUTH_SECRET=your_minimum_32_character_secret_here
-BETTER_AUTH_SESSION_EXPIRY_SECONDS=1209600
 
 GOOGLE_ID=your_google_oauth_client_id
 GOOGLE_SECRET=your_google_oauth_client_secret
@@ -57,10 +55,13 @@ Meaning:
 
 - `NEXT_PUBLIC_BACKEND_API_URL`: backend base URL
 - `NEXT_PUBLIC_BETTER_AUTH_URL`: frontend app URL
-- `NEXT_PUBLIC_ACCESS_TOKEN_REFRESH_THRESHOLD_SECONDS`: proactive refresh threshold
 - `BETTER_AUTH_SECRET`: auth signing secret
 - `GOOGLE_ID` / `GOOGLE_SECRET`: Google OAuth credentials
 - `RESEND_KEY` / `RESEND_FROM`: email delivery credentials
+
+Notes:
+
+- Session/JWT lifetime is fixed in code to 3 days with no backend refresh-token rotation.
 
 ## Commands
 

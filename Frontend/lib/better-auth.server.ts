@@ -9,8 +9,6 @@ const googleSecret = process.env.GOOGLE_SECRET?.toString()?.trim();
 const authSecret = process.env.BETTER_AUTH_SECRET?.toString()?.trim();
 const resendKey = process.env.RESEND_KEY?.toString()?.trim();
 const resendFrom = process.env.RESEND_FROM?.toString()?.trim();
-const sessionExpiryRaw =
-  process.env.BETTER_AUTH_SESSION_EXPIRY_SECONDS?.toString()?.trim();
 const serverBaseUrlRaw = process.env.BETTER_AUTH_URL?.toString()?.trim();
 const publicBaseUrlRaw =
   process.env.NEXT_PUBLIC_BETTER_AUTH_URL?.toString()?.trim();
@@ -21,15 +19,7 @@ const vercelProductionUrlRaw =
 const manualTrustedOriginsRaw =
   process.env.BETTER_AUTH_TRUSTED_ORIGINS?.toString()?.trim();
 
-const defaultSessionExpirySeconds = 14 * 24 * 60 * 60;
-const parsedSessionExpirySeconds = Number.parseInt(
-  sessionExpiryRaw || `${defaultSessionExpirySeconds}`,
-  10,
-);
-const resolvedSessionExpirySeconds =
-  Number.isFinite(parsedSessionExpirySeconds) && parsedSessionExpirySeconds > 0
-    ? parsedSessionExpirySeconds
-    : defaultSessionExpirySeconds;
+const jwtSessionExpirySeconds = 3 * 24 * 60 * 60;
 
 const defaultFrom = "FeedersLab <noreply@email.feeders.app>";
 const resolvedFrom = resendFrom?.length ? resendFrom : defaultFrom;
@@ -135,9 +125,9 @@ export const auth = betterAuth({
   // preview hosts prevents valid sign-in attempts from being treated as forged.
   trustedOrigins,
   session: {
-    expiresIn: resolvedSessionExpirySeconds,
-    // We keep explicit refresh boundaries instead of silent extension so
-    // backend token rotation stays deterministic across tabs and devices.
+    // Keep auth simple for learning mode: one JWT/session lifetime of 3 days,
+    // no backend refresh-token rotation.
+    expiresIn: jwtSessionExpirySeconds,
     slidingExpiration: false, // Session does NOT extend on activity
   },
 

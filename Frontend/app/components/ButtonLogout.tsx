@@ -1,7 +1,7 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import backendApi, { clearBackendAccessToken } from "@/lib/backend-api";
+import backendApi from "@/lib/backend-api";
 type ButtonLogoutProps = {
   color?: string;
 };
@@ -18,9 +18,8 @@ export default function ButtonLogout({ color }: ButtonLogoutProps) {
         try {
           await backendApi.post("/auth/logout", {});
         } catch {
-          // Even if backend revoke fails, continue sign-out to avoid trapping the user.
+          // Even if backend logout logging fails, continue sign-out to avoid trapping the user.
         }
-        clearBackendAccessToken();
         await authClient.signOut();
         window.location.href = "/";
       }}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import backendApi, { initializeBackendAuthSession } from "@/lib/backend-api";
+import backendApi from "@/lib/backend-api";
 import ButtonCheckout from "./ButtonCheckout";
 import ButtonPortal from "./ButtonPortal";
 import axios from "axios";
@@ -19,42 +19,13 @@ export default function BillingActionButton() {
     let isMounted = true;
 
     async function fetchStatus() {
-      let shouldStopLoading = true;
-
       try {
-        const initialized = await initializeBackendAuthSession();
-        if (!initialized) {
-          // Do not keep spinner forever if backend token bootstrap is delayed;
-          // fall back to checkout state and allow normal user interaction.
-          if (isMounted) {
-            setStatus({ has_access: false, customer_id: null });
-          }
-          return;
-        }
-
         const response = await backendApi.get<BillingStatus>("/billing/status");
         if (isMounted) {
           setStatus(response.data);
         }
       } catch (error) {
         if (axios.isAxiosError(error) && error.response?.status === 401) {
-          const recovered = await initializeBackendAuthSession();
-          if (recovered) {
-            try {
-              const retryResponse =
-                await backendApi.get<BillingStatus>("/billing/status");
-              if (isMounted) {
-                setStatus(retryResponse.data);
-              }
-              return;
-            } catch {
-              if (isMounted) {
-                setStatus({ has_access: false, customer_id: null });
-              }
-              return;
-            }
-          }
-
           if (isMounted) {
             setStatus({ has_access: false, customer_id: null });
           }
@@ -70,7 +41,7 @@ export default function BillingActionButton() {
           setStatus({ has_access: false, customer_id: null });
         }
       } finally {
-        if (isMounted && shouldStopLoading) {
+        if (isMounted) {
           setIsLoading(false);
         }
       }

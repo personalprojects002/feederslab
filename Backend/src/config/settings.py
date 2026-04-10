@@ -37,14 +37,7 @@ class Settings(BaseSettings):
 
 	app_url: str = Field(default="http://localhost:3000", alias="APP_URL")
 
-	access_token_expiry_seconds: int = Field(default=1800, alias="ACCESS_TOKEN_EXPIRY_SECONDS")
-	refresh_token_expiry_days: int = Field(default=14, alias="REFRESH_TOKEN_EXPIRY_DAYS")
-	refresh_token_leeway_seconds: int = Field(default=30, alias="REFRESH_TOKEN_LEEWAY_SECONDS")
-
-	refresh_cookie_name: str = Field(default="feeders_refresh_token", alias="REFRESH_COOKIE_NAME")
-	refresh_cookie_secure: bool = Field(default=False, alias="REFRESH_COOKIE_SECURE")
-	refresh_cookie_samesite: str = Field(default="lax", alias="REFRESH_COOKIE_SAMESITE")
-	refresh_cookie_path: str = Field(default="/", alias="REFRESH_COOKIE_PATH")
+	jwt_leeway_seconds: int = Field(default=30, alias="JWT_LEEWAY_SECONDS")
 
 	@property
 	def database_url(self) -> str:

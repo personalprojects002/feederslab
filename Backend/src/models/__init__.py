@@ -9,6 +9,5 @@ from src.models.board import Board
 from src.models.feature import Feature
 from src.models.share_link import ShareLink
 from src.models.upvote import Upvote
-from src.models.refresh_token import RefreshToken
 
-__all__ = ["User", "Board", "Feature", "ShareLink", "Upvote", "RefreshToken"]
+__all__ = ["User", "Board", "Feature", "ShareLink", "Upvote"]

@@ -6,7 +6,9 @@
       "Bash(netstat:*)",
       "Bash(curl:*)",
       "Bash(lsof:*)",
-      "Bash(kill:*)"
+      "Bash(kill:*)",
+      "Bash(pwsh -Command \".specify/scripts/powershell/create-new-feature.ps1 -Json -Number 2 -ShortName 'feedback-features' 'Implement feature creation, upvoting, board sharing with access control, and dashboard sidebar navigation for enterprise feedback collection SaaS'\")",
+      "Bash(pwsh -Command \".specify/scripts/powershell/setup-plan.ps1 -Json\")"
     ]
   }
 }

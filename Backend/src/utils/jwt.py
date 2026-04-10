@@ -91,7 +91,7 @@ def _verify_with_jwks(token: str) -> dict[str, Any]:
                 token,
                 key=cast(Any, public_key),
                 algorithms=algorithms,
-                leeway=settings.refresh_token_leeway_seconds,
+                leeway=settings.jwt_leeway_seconds,
                 options={"verify_aud": False},
             )
             return decoded
@@ -114,7 +114,7 @@ def verify_jwt_token(token: str) -> dict[str, Any]:
                     token,
                     str(settings.better_auth_secret),
                     algorithms=["HS256"],
-                    leeway=settings.refresh_token_leeway_seconds,
+                    leeway=settings.jwt_leeway_seconds,
                     options={"verify_aud": False},
                 )
             except jwt.exceptions.ExpiredSignatureError:

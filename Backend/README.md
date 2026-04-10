@@ -53,13 +53,7 @@ STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
 STRIPE_PRODUCT_PRICE_ID=price_your_product_price_id
 STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
 
-ACCESS_TOKEN_EXPIRY_SECONDS=1800
-REFRESH_TOKEN_EXPIRY_DAYS=14
-REFRESH_TOKEN_LEEWAY_SECONDS=30
-REFRESH_COOKIE_NAME=feeders_refresh_token
-REFRESH_COOKIE_SECURE=false
-REFRESH_COOKIE_SAMESITE=lax
-REFRESH_COOKIE_PATH=/
+JWT_LEEWAY_SECONDS=30
 ```
 
 Meaning:
@@ -67,6 +61,7 @@ Meaning:
 - `DATABASE`: selects PROD or TEST URL branch
 - `BACKEND_PROD_DATABASE_URL` / `BACKEND_TEST_DATABASE_URL`: database connections
 - `BETTER_AUTH_SECRET`: auth security secret
+- `JWT_LEEWAY_SECONDS`: clock-skew tolerance when verifying incoming JWTs
 - `STRIPE_SECRET_KEY`: Stripe secret key
 - `STRIPE_PRODUCT_PRICE_ID`: Stripe recurring price id
 - `STRIPE_WEBHOOK_SECRET`: webhook signature verification key
