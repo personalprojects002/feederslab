@@ -27,9 +27,10 @@ export default function Home() {
     <main>
       <header className="border-b border-[#E5E7EB] bg-white/90 backdrop-blur sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 lg:px-10 flex h-16 sm:h-20 items-center justify-between">
-          <div className="shrink-0 text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight text-[#0B0B0C]">
+          <div className="shrink-0 text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight text-[#0B0B0C] pl-0 ml-0 sm:ml-0 lg:ml-[-30px]">
             FeedersLab
           </div>
+
           <nav className="hidden md:flex items-center gap-6 lg:gap-10 text-sm lg:text-base text-gray-600">
             <a href="#product" className="hover:text-black transition-colors">
               Product
