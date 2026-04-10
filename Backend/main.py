@@ -56,4 +56,10 @@ app.include_router(share_links_router)
 app.include_router(upvotes_router)
 app.include_router(billing_router)
 app.include_router(auth_router)
+
+# Root endpoint for welcome message
+@app.get("/", tags=["Root"])
+async def root():
+    return {"message": "welcome to feedderslab"}
+
 app.include_router(webhook_router)
